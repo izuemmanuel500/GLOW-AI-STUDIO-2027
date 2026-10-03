@@ -1,332 +1,473 @@
 const modal = document.getElementById("studioModal");
 const modalContent = document.getElementById("modalContent");
 
+/* =========================================================
+OPEN STUDIO
+========================================================= */
+
 function openStudio(type) {
-    modal.classList.add("active");
 
-    if (type === "music") {
-        showMusicStudio();
-    } else if (type === "video") {
-        showVideoStudio();
-    }
-}
+if (!modal || !modalContent) return;
 
-function closeStudio() {
-    modal.classList.remove("active");
-    modalContent.innerHTML = "";
-}
+if (type === "music") {
 
-function showMusicStudio() {
     modalContent.innerHTML = `
-        <div class="studio-modal">
-            <div class="studio-icon">🎵</div>
 
-            <h2>AI Music Studio</h2>
-            <p>Create complete AI music from your imagination.</p>
+        <div class="studio-modal-header">
 
-            <label>Describe your song</label>
+            <span class="studio-modal-badge">
+                🎵 GLOW MUSIC STUDIO
+            </span>
 
-            <textarea
-                id="musicPrompt"
-                placeholder="Example: Create an energetic Afrobeat song about success, with powerful drums, warm bass, guitar and catchy vocals..."
-            ></textarea>
+            <h2>
+                Create Your Music
+            </h2>
 
-            <div class="form-row">
+            <p>
+                Describe the song in your imagination.
+                GLOW will prepare the creative direction
+                for your AI music project.
+            </p>
 
-                <div>
-                    <label>Genre</label>
-                    <select id="musicGenre">
+        </div>
+
+
+        <form
+            class="music-form"
+            onsubmit="generateMusic(event)"
+        >
+
+            <div class="form-group">
+
+                <label for="songPrompt">
+                    Describe your song
+                </label>
+
+                <span class="form-hint">
+                    Tell GLOW about the sound, story, instruments,
+                    vocals and feeling you want.
+                </span>
+
+                <textarea
+                    id="songPrompt"
+                    placeholder="Example: Create an energetic Afrobeat song about success, with powerful drums, warm bass, guitar and catchy vocals..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-options">
+
+                <div class="select-box">
+
+                    <label for="genre">
+                        Genre
+                    </label>
+
+                    <select id="genre">
+
                         <option>Afrobeat</option>
                         <option>Afropop</option>
                         <option>Hip-Hop</option>
                         <option>R&B</option>
                         <option>Pop</option>
-                        <option>Gospel</option>
                         <option>Reggae</option>
-                        <option>Highlife</option>
+                        <option>Dancehall</option>
+                        <option>Gospel</option>
+                        <option>Amapiano</option>
+                        <option>Rock</option>
                         <option>Electronic</option>
+
                     </select>
+
                 </div>
 
-                <div>
-                    <label>Mood</label>
-                    <select id="musicMood">
+
+                <div class="select-box">
+
+                    <label for="mood">
+                        Mood
+                    </label>
+
+                    <select id="mood">
+
                         <option>Energetic</option>
                         <option>Happy</option>
                         <option>Romantic</option>
+                        <option>Sad</option>
                         <option>Emotional</option>
+                        <option>Motivational</option>
                         <option>Dark</option>
                         <option>Chill</option>
-                        <option>Inspirational</option>
+                        <option>Epic</option>
+
                     </select>
+
+                </div>
+
+
+                <div class="select-box">
+
+                    <label for="length">
+                        Song length
+                    </label>
+
+                    <select id="length">
+
+                        <option value="60">
+                            1 minute
+                        </option>
+
+                        <option value="120">
+                            2 minutes
+                        </option>
+
+                        <option value="180">
+                            3 minutes
+                        </option>
+
+                        <option value="240">
+                            4 minutes
+                        </option>
+
+                    </select>
+
                 </div>
 
             </div>
 
-            <label>Song length</label>
-
-            <select id="musicLength">
-                <option value="30000">30 seconds</option>
-                <option value="60000" selected>1 minute</option>
-                <option value="120000">2 minutes</option>
-                <option value="180000">3 minutes</option>
-            </select>
 
             <button
+                type="submit"
                 class="generate-btn"
-                id="generateMusicButton"
-                onclick="generateMusic()"
+                id="generateMusicBtn"
             >
                 🎵 Generate AI Song
             </button>
 
-            <div id="musicResult"></div>
-        </div>
+
+            <div
+                class="generation-status"
+                id="generationStatus"
+            >
+
+                <div class="loading-ring"></div>
+
+                <strong>
+                    Preparing your music...
+                </strong>
+
+                <p style="
+                    margin-top:8px;
+                    color:#888895;
+                    font-size:13px;
+                ">
+                    GLOW is preparing your creative project.
+                </p>
+
+            </div>
+
+        </form>
+
     `;
+
 }
 
-function showVideoStudio() {
+
+else if (type === "video") {
+
     modalContent.innerHTML = `
-        <div class="studio-modal">
 
-            <div class="studio-icon">🎬</div>
+        <div class="studio-modal-header">
 
-            <h2>AI Video Studio</h2>
-            <p>Create cinematic videos from your ideas.</p>
+            <span class="studio-modal-badge">
+                🎬 GLOW VIDEO STUDIO
+            </span>
 
-            <label>Describe your video</label>
+            <h2>
+                Create Your Video
+            </h2>
 
-            <textarea
-                id="videoPrompt"
-                placeholder="Example: A young African footballer rises from a small village and becomes a world champion..."
-            ></textarea>
+            <p>
+                Turn your imagination into a cinematic
+                video concept with characters, scenes,
+                music and story direction.
+            </p>
 
-            <label>Video style</label>
+        </div>
 
-            <select id="videoStyle">
-                <option>Cinematic</option>
-                <option>Music Video</option>
-                <option>Drama</option>
-                <option>Action</option>
-                <option>Documentary</option>
-                <option>Anime</option>
-                <option>Realistic</option>
-            </select>
 
-            <label>Video length</label>
+        <form
+            class="music-form"
+            onsubmit="generateVideo(event)"
+        >
 
-            <select id="videoLength">
-                <option>Short</option>
-                <option>Medium</option>
-                <option>Long</option>
-            </select>
+            <div class="form-group">
+
+                <label for="videoPrompt">
+                    Describe your video
+                </label>
+
+                <span class="form-hint">
+                    Describe the story, characters, location,
+                    action and visual style.
+                </span>
+
+                <textarea
+                    id="videoPrompt"
+                    placeholder="Example: A young Nigerian footballer rises from a small neighborhood pitch to become a world-famous player..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-options">
+
+                <div class="select-box">
+
+                    <label for="videoStyle">
+                        Visual Style
+                    </label>
+
+                    <select id="videoStyle">
+
+                        <option>Cinematic</option>
+                        <option>Realistic</option>
+                        <option>Music Video</option>
+                        <option>Anime</option>
+                        <option>Documentary</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="select-box">
+
+                    <label for="videoMood">
+                        Mood
+                    </label>
+
+                    <select id="videoMood">
+
+                        <option>Epic</option>
+                        <option>Emotional</option>
+                        <option>Dark</option>
+                        <option>Happy</option>
+                        <option>Inspirational</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="select-box">
+
+                    <label for="videoLength">
+                        Duration
+                    </label>
+
+                    <select id="videoLength">
+
+                        <option>30 seconds</option>
+                        <option>1 minute</option>
+                        <option>3 minutes</option>
+                        <option>5 minutes</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
 
             <button
+                type="submit"
                 class="generate-btn"
-                onclick="generateVideo()"
             >
                 🎬 Generate AI Video
             </button>
 
-            <div id="videoResult"></div>
+        </form>
 
-        </div>
-    `;
-}
-
-async function generateMusic() {
-
-    const promptElement = document.getElementById("musicPrompt");
-    const genreElement = document.getElementById("musicGenre");
-    const moodElement = document.getElementById("musicMood");
-    const lengthElement = document.getElementById("musicLength");
-
-    const result = document.getElementById("musicResult");
-    const button = document.getElementById("generateMusicButton");
-
-    const prompt = promptElement.value.trim();
-    const genre = genreElement.value;
-    const mood = moodElement.value;
-    const length = Number(lengthElement.value);
-
-    if (!prompt) {
-        result.innerHTML = `
-            <div class="result-error">
-                ⚠️ Please describe the song you want to create.
-            </div>
-        `;
-        return;
-    }
-
-    const finalPrompt = `
-Create a complete ${genre} song.
-
-Mood: ${mood}.
-
-User's idea:
-${prompt}
-
-Make the song musical, polished and engaging.
-Include appropriate instruments, rhythm, melody and production.
-If vocals are appropriate, create suitable original vocals and lyrics.
-`;
-
-    button.disabled = true;
-    button.innerHTML = "⏳ Creating your song...";
-
-    result.innerHTML = `
-        <div class="generating">
-            <div class="loading-spinner"></div>
-            <h3>GLOW AI is creating your song...</h3>
-            <p>This can take a little while.</p>
-        </div>
     `;
 
-    try {
-
-        const response = await fetch("/api/music", {
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                prompt: finalPrompt,
-                music_length_ms: length
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-            throw new Error(
-                data.error || "Music generation failed."
-            );
-        }
-
-        result.innerHTML = `
-            <div class="music-success">
-
-                <h3>✨ Your song is ready!</h3>
-
-                <audio
-                    controls
-                    class="audio-player"
-                    src="${data.audio}">
-                </audio>
-
-                <a
-                    class="download-btn"
-                    href="${data.audio}"
-                    download="GLOW-AI-Song.mp3"
-                >
-                    ⬇️ Download Song
-                </a>
-
-                <button
-                    class="secondary-btn"
-                    onclick="showMusicStudio()"
-                >
-                    🎵 Create Another Song
-                </button>
-
-            </div>
-        `;
-
-    } catch (error) {
-
-        console.error("GLOW MUSIC ERROR:", error);
-
-        result.innerHTML = `
-            <div class="result-error">
-
-                <h3>❌ Music generation failed</h3>
-
-                <p>${escapeHTML(error.message)}</p>
-
-                <p>
-                    Check that the Eleven Music API key is connected
-                    to the server.
-                </p>
-
-            </div>
-        `;
-
-    } finally {
-
-        button.disabled = false;
-        button.innerHTML = "🎵 Generate AI Song";
-
-    }
 }
 
-async function generateVideo() {
 
-    const promptElement = document.getElementById("videoPrompt");
-    const styleElement = document.getElementById("videoStyle");
-    const lengthElement = document.getElementById("videoLength");
+modal.classList.add("active");
 
-    const result = document.getElementById("videoResult");
+document.body.style.overflow = "hidden";
 
-    const prompt = promptElement.value.trim();
-    const style = styleElement.value;
-    const length = lengthElement.value;
-
-    if (!prompt) {
-        result.innerHTML = `
-            <div class="result-error">
-                ⚠️ Please describe the video you want to create.
-            </div>
-        `;
-        return;
-    }
-
-    result.innerHTML = `
-        <div class="generating">
-            <div class="loading-spinner"></div>
-
-            <h3>🎬 Video request prepared</h3>
-
-            <p>
-                Your ${style.toLowerCase()} video idea is ready.
-            </p>
-
-            <p>
-                The AI video generation engine will be connected next.
-            </p>
-        </div>
-    `;
-
-    console.log({
-        prompt,
-        style,
-        length
-    });
 }
 
-function escapeHTML(value) {
+/* =========================================================
+CLOSE STUDIO
+========================================================= */
 
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+function closeStudio() {
+
+if (!modal) return;
+
+modal.classList.remove("active");
+
+document.body.style.overflow = "";
+
 }
 
-modal.addEventListener("click", function(event) {
+/* Close when clicking outside */
 
-    if (event.target === modal) {
-        closeStudio();
-    }
+function closeStudioOutside(event) {
 
-});
+if (event.target === modal) {
+    closeStudio();
+}
+
+}
+
+/* ESC key */
 
 document.addEventListener("keydown", function(event) {
 
-    if (event.key === "Escape") {
-        closeStudio();
-    }
+if (event.key === "Escape") {
+    closeStudio();
+}
 
 });
+
+/* =========================================================
+GENERATE MUSIC
+========================================================= */
+
+function generateMusic(event) {
+
+event.preventDefault();
+
+const prompt =
+    document.getElementById("songPrompt").value.trim();
+
+const genre =
+    document.getElementById("genre").value;
+
+const mood =
+    document.getElementById("mood").value;
+
+const length =
+    document.getElementById("length").value;
+
+const button =
+    document.getElementById("generateMusicBtn");
+
+const status =
+    document.getElementById("generationStatus");
+
+
+if (!prompt) {
+    alert("Please describe the song you want to create.");
+    return;
+}
+
+
+button.disabled = true;
+
+button.textContent = "✨ Preparing Music...";
+
+status.classList.add("active");
+
+
+/*
+   CURRENT STAGE:
+
+   This creates the creative project interface.
+   The actual AI audio generation API can be
+   connected here later.
+*/
+
+setTimeout(function() {
+
+    button.disabled = false;
+
+    button.textContent = "🎵 Generate AI Song";
+
+    status.innerHTML = `
+
+        <div style="font-size:30px;">
+            ✨
+        </div>
+
+        <strong>
+            Music project created
+        </strong>
+
+        <p style="
+            margin-top:8px;
+            color:#888895;
+            font-size:13px;
+            line-height:1.6;
+        ">
+            ${escapeHTML(genre)}
+            •
+            ${escapeHTML(mood)}
+            •
+            ${escapeHTML(length)} seconds
+        </p>
+
+        <p style="
+            margin-top:8px;
+            color:#888895;
+            font-size:13px;
+        ">
+            Your AI generation pipeline can be connected
+            to this project next.
+        </p>
+
+    `;
+
+}, 1800);
+
+}
+
+/* =========================================================
+GENERATE VIDEO
+========================================================= */
+
+function generateVideo(event) {
+
+event.preventDefault();
+
+const prompt =
+    document.getElementById("videoPrompt").value.trim();
+
+if (!prompt) {
+    alert("Please describe the video you want to create.");
+    return;
+}
+
+alert(
+    "Your video project has been created. " +
+    "The AI video generation engine can be connected next."
+);
+
+}
+
+/* =========================================================
+SECURITY HELPER
+========================================================= */
+
+function escapeHTML(value) {
+
+return String(value)
+
+    .replace(/&/g, "&amp;")
+
+    .replace(/</g, "&lt;")
+
+    .replace(/>/g, "&gt;")
+
+    .replace(/"/g, "&quot;")
+
+    .replace(/'/g, "&#039;");
+
+        }
