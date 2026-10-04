@@ -1,234 +1,387 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>GLOW AI STUDIO 2027</title>
 
-<meta
-    name="description"
-    content="GLOW AI STUDIO 2027 — Create AI music and AI videos from your imagination."
->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<link rel="stylesheet" href="style.css">
+    <title>GLOW AI STUDIO 2027</title>
 
-</head><body><header class="topbar"><div class="logo">
-    <span class="logo-icon">✦</span>
+    <meta
+        name="description"
+        content="GLOW AI STUDIO 2027 — Create AI music and AI videos from your imagination."
+    >
 
-    <div>
-        <strong>GLOW</strong>
-        <small>AI STUDIO 2027</small>
-    </div>
-</div>
+    <link rel="stylesheet" href="style.css">
+</head>
 
-<nav>
-    <a href="#home">Home</a>
-    <a href="#music">Music</a>
-    <a href="#video">Video</a>
-    <a href="#creations">Creations</a>
-</nav>
+<body>
 
-<button class="login-btn">Sign In</button>
+    <!-- =====================================================
+         TOP NAVIGATION
+    ====================================================== -->
 
-</header><main id="home"><section class="hero">
+    <header class="topbar">
 
-    <div class="hero-content">
-
-        <div class="badge">
-            ✨ NEXT-GENERATION AI CREATIVE STUDIO
+        <div class="logo">
+            <span>GLOW</span>
+            <small>AI STUDIO 2027</small>
         </div>
 
-        <h1>
-            Turn Your
-            <span>Imagination</span>
-            Into Reality.
-        </h1>
+        <nav class="nav">
 
-        <p>
-            Create original music, songs, cinematic videos and
-            dramatic stories with the power of AI.
-        </p>
+            <a href="#home">Home</a>
 
-        <div class="hero-buttons">
+            <a href="#music">Music</a>
+
+            <a href="#video">Video</a>
+
+            <a href="#creations">Creations</a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
+
+    <main>
+
+        <section
+            id="home"
+            class="hero"
+        >
+
+            <div class="hero-content">
+
+                <span class="hero-badge">
+                    ✨ NEXT-GENERATION AI CREATION
+                </span>
+
+                <h1>
+                    Turn Your
+                    <span>Imagination</span>
+                    Into Reality.
+                </h1>
+
+                <p>
+                    Create music, videos, stories,
+                    characters and unforgettable
+                    experiences with GLOW AI STUDIO.
+                </p>
+
+                <div class="hero-buttons">
+
+                    <button
+                        type="button"
+                        onclick="openStudio('music')"
+                        class="primary-btn"
+                    >
+                        🎵 Create Music
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="openStudio('video')"
+                        class="secondary-btn"
+                    >
+                        🎬 Create Video
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-visual">
+
+                <div class="glow-orb">
+
+                    <div class="orb-inner">
+                        G
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MUSIC STUDIO
+        ================================================== -->
+
+        <section
+            id="music"
+            class="feature-section"
+        >
+
+            <div class="section-heading">
+
+                <span>
+                    🎵 MUSIC STUDIO
+                </span>
+
+                <h2>
+                    Create Music
+                    <strong>From Your Ideas.</strong>
+                </h2>
+
+                <p>
+                    Describe the song you imagine
+                    and let GLOW AI transform your
+                    idea into music.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    🎵
+                </div>
+
+                <h3>
+                    AI Music Generator
+                </h3>
+
+                <p>
+                    Create Afrobeat, Afropop,
+                    Amapiano, Hip-Hop, R&B,
+                    Gospel, Pop and more.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openStudio('music')"
+                    class="generate-btn"
+                >
+                    🎵 Create Music
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             VIDEO STUDIO
+        ================================================== -->
+
+        <section
+            id="video"
+            class="feature-section"
+        >
+
+            <div class="section-heading">
+
+                <span>
+                    🎬 VIDEO STUDIO
+                </span>
+
+                <h2>
+                    Create
+                    <strong>Cinematic Videos.</strong>
+                </h2>
+
+                <p>
+                    Turn your stories and ideas
+                    into cinematic AI video projects.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    🎬
+                </div>
+
+                <h3>
+                    AI Video Generator
+                </h3>
+
+                <p>
+                    Create cinematic stories,
+                    music videos, dramatic scenes,
+                    characters and visual experiences.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openStudio('video')"
+                    class="generate-btn"
+                >
+                    🎬 Create Video
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             CREATIONS
+        ================================================== -->
+
+        <section
+            id="creations"
+            class="creations-section"
+        >
+
+            <div class="section-heading">
+
+                <span>
+                    ✨ YOUR CREATIONS
+                </span>
+
+                <h2>
+                    Your AI
+                    <strong>Creative World.</strong>
+                </h2>
+
+                <p>
+                    Your generated music and videos
+                    will appear here.
+                </p>
+
+            </div>
+
+
+            <div class="creation-grid">
+
+                <div class="creation-card">
+
+                    <div class="creation-placeholder">
+                        🎵
+                    </div>
+
+                    <h3>
+                        AI Music
+                    </h3>
+
+                    <p>
+                        Your generated songs
+                        will appear here.
+                    </p>
+
+                </div>
+
+
+                <div class="creation-card">
+
+                    <div class="creation-placeholder">
+                        🎬
+                    </div>
+
+                    <h3>
+                        AI Video
+                    </h3>
+
+                    <p>
+                        Your generated videos
+                        will appear here.
+                    </p>
+
+                </div>
+
+
+                <div class="creation-card">
+
+                    <div class="creation-placeholder">
+                        ✨
+                    </div>
+
+                    <h3>
+                        More Coming
+                    </h3>
+
+                    <p>
+                        GLOW AI will continue
+                        expanding your creative tools.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         STUDIO POPUP / MODAL
+    ====================================================== -->
+
+    <div
+        id="studioModal"
+        class="studio-modal"
+        onclick="closeStudioOutside(event)"
+    >
+
+        <div
+            class="studio-modal-box"
+            onclick="event.stopPropagation()"
+        >
 
             <button
-                class="primary-btn"
-                onclick="openStudio('music')"
+                type="button"
+                class="modal-close"
+                onclick="closeStudio()"
+                aria-label="Close"
             >
-                🎵 Create Music
+                ✕
             </button>
 
-            <button
-                class="secondary-btn"
-                onclick="openStudio('video')"
-            >
-                🎬 Create Video
-            </button>
+            <div id="modalContent">
 
-        </div>
+                <!-- JavaScript inserts Music or Video Studio here -->
 
-    </div>
-
-
-    <div class="hero-orb">
-
-        <div class="orb">
-
-            <div class="orb-inner">
-                GLOW
             </div>
 
         </div>
 
     </div>
 
-</section>
 
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
 
-<section class="studios">
+    <footer class="footer">
 
-    <div class="section-title">
-
-        <span>GLOW STUDIOS</span>
-
-        <h2>Choose your creative studio</h2>
-
-        <p>
-            Two powerful AI tools. One creative platform.
-        </p>
-
-    </div>
-
-
-    <div class="studio-grid">
-
-        <article class="studio-card music-card" id="music">
-
-            <div class="card-icon">🎵</div>
-
-            <span class="card-label">
-                AI MUSIC
-            </span>
-
-            <h3>Create Music</h3>
-
-            <p>
-                Describe the song you want and let AI create
-                lyrics, vocals, melodies, beats and instruments.
-            </p>
-
-            <ul>
-                <li>✓ AI vocals</li>
-                <li>✓ Lyrics generation</li>
-                <li>✓ Beats & instruments</li>
-                <li>✓ Multiple music styles</li>
-            </ul>
-
-            <button
-                class="card-btn"
-                onclick="openStudio('music')"
-            >
-                Open Music Studio →
-            </button>
-
-        </article>
-
-
-        <article class="studio-card video-card" id="video">
-
-            <div class="card-icon">🎬</div>
-
-            <span class="card-label">
-                AI VIDEO
-            </span>
-
-            <h3>Create Video</h3>
-
-            <p>
-                Turn your ideas, stories and prompts into
-                cinematic scenes, characters, music videos
-                and drama.
-            </p>
-
-            <ul>
-                <li>✓ AI characters</li>
-                <li>✓ Cinematic scenes</li>
-                <li>✓ Story generation</li>
-                <li>✓ Music videos & drama</li>
-            </ul>
-
-            <button
-                class="card-btn"
-                onclick="openStudio('video')"
-            >
-                Open Video Studio →
-            </button>
-
-        </article>
-
-    </div>
-
-</section>
-
-
-<section class="creations" id="creations">
-
-    <div class="section-title">
-
-        <span>YOUR WORKSPACE</span>
-
-        <h2>Your Creations</h2>
+        <div class="footer-logo">
+            GLOW
+            <span>AI STUDIO 2027</span>
+        </div>
 
         <p>
-            Your generated music and videos will appear here.
+            Create Music. Create Video.
+            Create Your World.
         </p>
 
-    </div>
-
-
-    <div class="empty-state">
-
-        <div class="empty-icon">✨</div>
-
-        <h3>Nothing here yet</h3>
-
-        <p>
-            Create your first project with GLOW AI STUDIO.
+        <p class="copyright">
+            © 2027 GLOW AI STUDIO.
+            All rights reserved.
         </p>
 
-    </div>
+    </footer>
 
-</section>
 
-</main><!-- STUDIO MODAL --><div
-    class="modal"
-    id="studioModal"
-    onclick="closeStudioOutside(event)"
-><div
-    class="modal-box"
-    onclick="event.stopPropagation()"
->
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
 
-    <button
-        class="close-btn"
-        onclick="closeStudio()"
-    >
-        ×
-    </button>
+    <script src="app.js"></script>
 
-    <div id="modalContent"></div>
-
-</div>
-
-</div><footer><div class="footer-logo">
-    ✦ GLOW AI STUDIO 2027
-</div>
-
-<p>
-    Create music. Create video. Create your world.
-</p>
-
-<span>
-    © 2027 GLOW AI STUDIO
-</span>
-
-</footer><script src="app.js"></script></body>
-                </html>
+</body>
+    </html>
