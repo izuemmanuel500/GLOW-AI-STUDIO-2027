@@ -1,226 +1,184 @@
 /* =========================================================
    GLOW AI STUDIO 2027
-   PIXAZO MUSIC + VIDEO FRONTEND
+   MUSIC + VIDEO STUDIO
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", function () {
 
-    console.log("✨ GLOW AI STUDIO 2027 loaded");
+/* =========================================================
+   GLOBAL ELEMENTS
+   ========================================================= */
+
+let studioModal = null;
+let modalContent = null;
 
 
-    const modal =
+/* =========================================================
+   OPEN STUDIO
+   IMPORTANT:
+   This function is global so your HTML
+   onclick="openStudio('music')" works.
+   ========================================================= */
+
+window.openStudio = function (type) {
+
+    studioModal =
         document.getElementById("studioModal");
 
-    const modalContent =
+    modalContent =
         document.getElementById("modalContent");
 
 
+    if (!studioModal || !modalContent) {
+
+        console.error(
+            "GLOW ERROR: studioModal or modalContent was not found."
+        );
+
+        return;
+    }
+
+
     /* =====================================================
-       OPEN STUDIO
-       ===================================================== */
+       MUSIC STUDIO
+    ===================================================== */
 
-    window.openStudio = function (type) {
+    if (type === "music") {
 
-        if (!modal || !modalContent) {
+        modalContent.innerHTML = `
 
-            console.error(
-                "GLOW: Studio modal not found."
-            );
+            <div class="studio-modal-header">
 
-            return;
-        }
+                <span class="studio-modal-badge">
+                    🎵 GLOW MUSIC STUDIO
+                </span>
+
+                <h2>
+                    Create Your Music
+                </h2>
+
+                <p>
+                    Turn your idea into an
+                    AI-generated song with
+                    vocals, lyrics, instruments,
+                    beats and professional production.
+                </p>
+
+            </div>
 
 
-        /* =================================================
-           MUSIC STUDIO
-           ================================================= */
+            <form
+                class="music-form"
+                id="musicForm"
+            >
 
-        if (type === "music") {
+                <div class="form-group">
 
-            modalContent.innerHTML = `
+                    <label for="songPrompt">
+                        Describe your song
+                    </label>
 
-                <div class="studio-modal-header">
-
-                    <span class="studio-modal-badge">
-                        🎵 GLOW MUSIC STUDIO
+                    <span class="form-hint">
+                        Tell GLOW about the story,
+                        sound, instruments, vocals
+                        and feeling you want.
                     </span>
 
-                    <h2>
-                        Create Your Music
-                    </h2>
-
-                    <p>
-                        Turn your idea into an
-                        AI-generated song with
-                        vocals, lyrics, instruments,
-                        beats and professional production.
-                    </p>
+                    <textarea
+                        id="songPrompt"
+                        placeholder="Example: Create an energetic modern Afrobeat song about chasing your dreams and becoming successful. Use powerful African drums, deep warm bass, catchy guitar, beautiful piano and inspiring vocals..."
+                        required
+                    ></textarea>
 
                 </div>
 
 
-                <form
-                    class="music-form"
-                    id="musicForm"
-                >
+                <div class="form-options">
 
-                    <div class="form-group">
+                    <div class="select-box">
 
-                        <label for="songPrompt">
-                            Describe your song
+                        <label for="genre">
+                            Genre
                         </label>
 
-                        <span class="form-hint">
-                            Tell GLOW about the story,
-                            sound, instruments, vocals
-                            and feeling you want.
-                        </span>
+                        <select id="genre">
 
+                            <option>
+                                Afrobeat
+                            </option>
 
-                        <textarea
-                            id="songPrompt"
-                            placeholder="Example: Create an energetic modern Afrobeat song about chasing your dreams and becoming successful. Use powerful African drums, deep warm bass, catchy guitar, beautiful piano and inspiring vocals..."
-                            required
-                        ></textarea>
+                            <option>
+                                Afropop
+                            </option>
+
+                            <option>
+                                Hip-Hop
+                            </option>
+
+                            <option>
+                                R&B
+                            </option>
+
+                            <option>
+                                Pop
+                            </option>
+
+                            <option>
+                                Reggae
+                            </option>
+
+                            <option>
+                                Dancehall
+                            </option>
+
+                            <option>
+                                Gospel
+                            </option>
+
+                            <option>
+                                Amapiano
+                            </option>
+
+                            <option>
+                                Rock
+                            </option>
+
+                            <option>
+                                Electronic
+                            </option>
+
+                        </select>
 
                     </div>
 
 
-                    <div class="form-options">
+                    <div class="select-box">
 
+                        <label for="mood">
+                            Mood
+                        </label>
 
-                        <div class="select-box">
+                        <select id="mood">
 
-                            <label for="genre">
-                                Genre
-                            </label>
+                            <option>
+                                Energetic
+                            </option>
 
-                            <select id="genre">
+                            <option>
+                                Happy
+                            </option>
 
-                                <option>
-                                    Afrobeat
-                                </option>
+                            <option>
+                                Romantic
+                            </option>
 
-                                <option>
-                                    Afropop
-                                </option>
+                            <option>
+                                Sad
+                            </option>
 
-                                <option>
-                                    Hip-Hop
-                                </option>
+                            <option>
+                                Emotional
+                            </option>
 
-                                <option>
-                                    R&B
-                                </option>
-
-                                <option>
-                                    Pop
-                                </option>
-
-                                <option>
-                                    Reggae
-                                </option>
-
-                                <option>
-                                    Dancehall
-                                </option>
-
-                                <option>
-                                    Gospel
-                                </option>
-
-                                <option>
-                                    Amapiano
-                                </option>
-
-                                <option>
-                                    Rock
-                                </option>
-
-                                <option>
-                                    Electronic
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="select-box">
-
-                            <label for="mood">
-                                Mood
-                            </label>
-
-                            <select id="mood">
-
-                                <option>
-                                    Energetic
-                                </option>
-
-                                <option>
-                                    Happy
-                                </option>
-
-                                <option>
-                                    Romantic
-                                </option>
-
-                                <option>
-                                    Sad
-                                </option>
-
-                                <option>
-                                    Emotional
-                                </option>
-
-                                <option>
-                                    Motivational
-                                </option>
-
-                                <option>
-                                    Dark
-                                </option>
-
-                                <option>
-                                    Chill
-                                </option>
-
-                                <option>
-                                    Epic
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="select-box">
-
-                            <label for="length">
-                                Song Length
-                            </label>
-
-                            <select id="length">
-
-                                <option value="30">
-                                    30 seconds
-                                </option>
-
-                                <option
-                                    value="60"
-                                    selected
-                                >
-                                    1 minute
-                                </option>
-
-                                <option value="120">
-                                    2 minutes
-                                </option>
-
-                                <option value="180">
-                                    3 minutes
-                                </option>
-
-                                <option value="240">
-                                    4 minutes
+                            <option>
+                                Motivational
+                           
