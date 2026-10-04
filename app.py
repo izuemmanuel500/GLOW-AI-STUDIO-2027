@@ -1,139 +1,349 @@
 import os
-import base64
-from io import BytesIO
+import time
+import requests
 
-from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask import (
+    Flask,
+    request,
+    jsonify,
+    send_from_directory
+)
+
 from flask_cors import CORS
-from elevenlabs.client import ElevenLabs
 
+
+# =========================================================
+# GLOW AI STUDIO 2027
+# PIXAZO MUSIC ENGINE
+# =========================================================
 
 app = Flask(__name__)
 CORS(app)
 
-API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
-if not API_KEY:
-    print("WARNING: ELEVENLABS_API_KEY is not configured.")
-
-elevenlabs = ElevenLabs(
-    api_key=API_KEY
-) if API_KEY else None
+PIXAZO_API_KEY = os.getenv("PIXAZO_API_KEY")
 
 
-# =========================
-# WEBSITE FILES
-# =========================
+PIXAZO_GENERATE_URL = (
+    "https://gateway.pixazo.ai/tracks/v1/generate"
+)
+
+PIXAZO_STATUS_URL = (
+    "https://gateway.pixazo.ai/v2/requests/status/"
+)
+
+
+# =========================================================
+# WEBSITE
+# =========================================================
 
 @app.route("/")
 def home():
-    return send_from_directory(".", "index.html")
+
+    return send_from_directory(
+        ".",
+        "index.html"
+    )
 
 
 @app.route("/<path:filename>")
 def static_files(filename):
-    return send_from_directory(".", filename)
+
+    return send_from_directory(
+        ".",
+        filename
+    )
 
 
-# =========================
+# =========================================================
 # HEALTH CHECK
-# =========================
+# =========================================================
 
 @app.route("/api/health")
 def health():
+
     return jsonify({
+
         "status": "ok",
+
         "app": "GLOW AI STUDIO 2027",
+
         "music_engine": (
-            "configured"
-            if API_KEY
-            else "missing_api_key"
+            "Pixazo Tracks"
+            if PIXAZO_API_KEY
+            else "missing_pixazo_api_key"
         )
+
     })
 
 
-# =========================
-# AI MUSIC
-# =========================
+# =========================================================
+# MUSIC GENERATION
+# =========================================================
 
-@app.route("/api/music", methods=["POST"])
+@app.route(
+    "/api/music",
+    methods=["POST"]
+)
 def generate_music():
 
     try:
 
-        if not API_KEY or elevenlabs is None:
+        # -------------------------------------------------
+        # CHECK API KEY
+        # -------------------------------------------------
+
+        if not PIXAZO_API_KEY:
+
             return jsonify({
+
                 "success": False,
-                "error": "ELEVENLABS_API_KEY is missing on the server."
+
+                "error":
+                    "PIXAZO_API_KEY is missing on the server."
+
             }), 500
 
-        data = request.get_json(silent=True) or {}
+
+        # -------------------------------------------------
+        # READ REQUEST
+        # -------------------------------------------------
+
+        data = (
+            request.get_json(
+                silent=True
+            )
+            or {}
+        )
+
 
         prompt = str(
-            data.get("prompt", "")
+            data.get(
+                "prompt",
+                ""
+            )
         ).strip()
 
+
         if not prompt:
+
             return jsonify({
+
                 "success": False,
-                "error": "Please enter a music prompt."
+
+                "error":
+                    "Please enter a music prompt."
+
             }), 400
 
-        prompt = prompt[:4100]
 
-        length = data.get(
+        # -------------------------------------------------
+        # DURATION
+        # -------------------------------------------------
+
+        length_ms = data.get(
             "music_length_ms",
             60000
         )
 
-        try:
-            length = int(length)
-        except (TypeError, ValueError):
-            length = 60000
 
-        length = max(
-            3000,
-            min(length, 600000)
+        try:
+
+            length_ms = int(
+                length_ms
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            length_ms = 60000
+
+
+        duration = int(
+            length_ms / 1000
         )
+
+
+        # Pixazo Tracks allows 10-600 seconds
+
+        duration = max(
+            10,
+            min(
+                duration,
+                600
+            )
+        )
+
+
+        # -------------------------------------------------
+        # PIXAZO REQUEST
+        # -------------------------------------------------
+
+        headers = {
+
+            "Content-Type":
+                "application/json",
+
+            "Cache-Control":
+                "no-cache",
+
+            "Ocp-Apim-Subscription-Key":
+                PIXAZO_API_KEY
+
+        }
+
+
+        payload = {
+
+            "prompt": prompt,
+
+            "lyrics": "",
+
+            "instrumental": False,
+
+            "duration": duration,
+
+            "bpm": 110,
+
+            "time_signature": "4/4",
+
+            "seed": -1
+
+        }
+
 
         print(
-            f"GLOW MUSIC: generating {length}ms song"
+            "GLOW MUSIC: sending request to Pixazo..."
         )
 
-        track = elevenlabs.music.compose(
-            prompt=prompt,
-            music_length_ms=length,
-            model_id="music_v2_5"
+
+        response = requests.post(
+
+            PIXAZO_GENERATE_URL,
+
+            headers=headers,
+
+            json=payload,
+
+            timeout=30
+
         )
 
-        audio_buffer = BytesIO()
 
-        for chunk in track:
-            if chunk:
-                audio_buffer.write(chunk)
+        # -------------------------------------------------
+        # PIXAZO ERROR
+        # -------------------------------------------------
 
-        audio_buffer.seek(0)
+        if response.status_code not in (
+            200,
+            201,
+            202
+        ):
 
-        audio_bytes = audio_buffer.getvalue()
+            try:
 
-        if not audio_bytes:
+                error_data = (
+                    response.json()
+                )
+
+            except Exception:
+
+                error_data = {
+                    "message":
+                        response.text
+                }
+
+
+            print(
+                "PIXAZO GENERATION ERROR:",
+                error_data
+            )
+
+
             return jsonify({
+
                 "success": False,
-                "error": "The music engine returned empty audio."
+
+                "error":
+                    "Pixazo music request failed.",
+
+                "details":
+                    error_data
+
+            }), response.status_code
+
+
+        # -------------------------------------------------
+        # READ QUEUED JOB
+        # -------------------------------------------------
+
+        result = response.json()
+
+
+        request_id = result.get(
+            "request_id"
+        )
+
+
+        if not request_id:
+
+            return jsonify({
+
+                "success": False,
+
+                "error":
+                    "Pixazo did not return a request ID.",
+
+                "details":
+                    result
+
             }), 502
 
-        audio_base64 = base64.b64encode(
-            audio_bytes
-        ).decode("utf-8")
+
+        print(
+            "GLOW MUSIC REQUEST ID:",
+            request_id
+        )
+
+
+        # -------------------------------------------------
+        # RETURN JOB TO FRONTEND
+        # -------------------------------------------------
 
         return jsonify({
+
             "success": True,
-            "message": "Music generated successfully.",
-            "audio": (
-                f"data:audio/mpeg;base64,{audio_base64}"
-            ),
-            "format": "mp3",
-            "length_ms": length
+
+            "status": "QUEUED",
+
+            "request_id":
+                request_id
+
         })
+
+
+    except requests.RequestException as error:
+
+        print(
+            "PIXAZO CONNECTION ERROR:",
+            repr(error)
+        )
+
+
+        return jsonify({
+
+            "success": False,
+
+            "error":
+                "Could not connect to Pixazo.",
+
+            "details":
+                str(error)
+
+        }), 502
+
 
     except Exception as error:
 
@@ -142,78 +352,270 @@ def generate_music():
             repr(error)
         )
 
+
         return jsonify({
+
             "success": False,
-            "error": str(error)
+
+            "error":
+                str(error)
+
         }), 500
 
 
-# =========================
-# TEST MUSIC
-# =========================
+# =========================================================
+# MUSIC STATUS
+# =========================================================
 
-@app.route("/api/music/test", methods=["POST"])
-def test_music():
+@app.route(
+    "/api/music/status/<request_id>",
+    methods=["GET"]
+)
+def music_status(request_id):
 
     try:
 
-        if not API_KEY or elevenlabs is None:
+        if not PIXAZO_API_KEY:
+
             return jsonify({
+
                 "success": False,
-                "error": "ELEVENLABS_API_KEY is missing."
+
+                "error":
+                    "PIXAZO_API_KEY is missing."
+
             }), 500
 
-        track = elevenlabs.music.compose(
-            prompt=(
-                "A short uplifting Afrobeat "
-                "instrumental intro with warm bass, "
-                "African percussion, guitar, piano "
-                "and energetic drums."
-            ),
-            music_length_ms=10000,
-            model_id="music_v2_5"
+
+        headers = {
+
+            "Ocp-Apim-Subscription-Key":
+                PIXAZO_API_KEY
+
+        }
+
+
+        url = (
+            PIXAZO_STATUS_URL
+            + request_id
         )
 
-        audio_buffer = BytesIO()
 
-        for chunk in track:
-            if chunk:
-                audio_buffer.write(chunk)
+        response = requests.get(
 
-        audio_buffer.seek(0)
+            url,
 
-        return send_file(
-            audio_buffer,
-            mimetype="audio/mpeg",
-            as_attachment=False,
-            download_name="glow-test.mp3"
+            headers=headers,
+
+            timeout=30
+
         )
+
+
+        try:
+
+            data = response.json()
+
+        except Exception:
+
+            data = {
+
+                "error":
+                    response.text
+
+            }
+
+
+        if response.status_code != 200:
+
+            return jsonify({
+
+                "success": False,
+
+                "error":
+                    "Could not check Pixazo job status.",
+
+                "details":
+                    data
+
+            }), response.status_code
+
+
+        status = str(
+            data.get(
+                "status",
+                ""
+            )
+        ).upper()
+
+
+        # -------------------------------------------------
+        # COMPLETED
+        # -------------------------------------------------
+
+        if status == "COMPLETED":
+
+            output = (
+                data.get(
+                    "output"
+                )
+                or {}
+            )
+
+
+            media_urls = (
+                output.get(
+                    "media_url"
+                )
+                or []
+            )
+
+
+            if isinstance(
+                media_urls,
+                str
+            ):
+
+                media_urls = [
+                    media_urls
+                ]
+
+
+            if not media_urls:
+
+                return jsonify({
+
+                    "success": False,
+
+                    "status":
+                        "ERROR",
+
+                    "error":
+                        "Pixazo completed the job but returned no audio URL.",
+
+                    "details":
+                        data
+
+                }), 502
+
+
+            audio_url = media_urls[0]
+
+
+            return jsonify({
+
+                "success": True,
+
+                "status":
+                    "COMPLETED",
+
+                "audio":
+                    audio_url,
+
+                "format":
+                    output.get(
+                        "media_type",
+                        "audio/mpeg"
+                    )
+
+            })
+
+
+        # -------------------------------------------------
+        # FAILED
+        # -------------------------------------------------
+
+        if status in (
+            "FAILED",
+            "ERROR"
+        ):
+
+            return jsonify({
+
+                "success": False,
+
+                "status":
+                    status,
+
+                "error":
+                    data.get(
+                        "error",
+                        "Pixazo music generation failed."
+                    )
+
+            }), 500
+
+
+        # -------------------------------------------------
+        # STILL PROCESSING
+        # -------------------------------------------------
+
+        return jsonify({
+
+            "success": True,
+
+            "status":
+                status or "PROCESSING",
+
+            "request_id":
+                request_id
+
+        })
+
+
+    except requests.RequestException as error:
+
+        return jsonify({
+
+            "success": False,
+
+            "error":
+                "Could not connect to Pixazo status service.",
+
+            "details":
+                str(error)
+
+        }), 502
+
 
     except Exception as error:
 
         print(
-            "GLOW TEST ERROR:",
+            "PIXAZO STATUS ERROR:",
             repr(error)
         )
 
+
         return jsonify({
+
             "success": False,
-            "error": str(error)
+
+            "error":
+                str(error)
+
         }), 500
 
 
-# =========================
+# =========================================================
 # START SERVER
-# =========================
+# =========================================================
 
 if __name__ == "__main__":
 
     port = int(
-        os.getenv("PORT", 10000)
+        os.getenv(
+            "PORT",
+            10000
+        )
     )
 
+
     app.run(
+
         host="0.0.0.0",
+
         port=port,
+
         debug=False
-    )
+
+        )
