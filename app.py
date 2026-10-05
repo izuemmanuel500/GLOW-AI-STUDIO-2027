@@ -1,5 +1,4 @@
 import os
-import time
 import requests
 
 from flask import (
@@ -125,16 +124,36 @@ def generate_music():
         ).strip()
 
 
-        if not prompt:
+        lyrics = str(
+            data.get(
+                "lyrics",
+                ""
+            )
+        ).strip()
+
+
+        if not prompt and not lyrics:
 
             return jsonify({
 
                 "success": False,
 
                 "error":
-                    "Please enter a music prompt."
+                    "Please enter your song idea or lyrics."
 
             }), 400
+
+
+        # -------------------------------------------------
+        # IMPORTANT
+        #
+        # If the frontend sends the complete song inside
+        # "prompt", use that text as the lyrics.
+        # -------------------------------------------------
+
+        if not lyrics:
+
+            lyrics = prompt
 
 
         # -------------------------------------------------
@@ -166,7 +185,8 @@ def generate_music():
         )
 
 
-        # Pixazo Tracks allows 10-600 seconds
+        # Pixazo Tracks allows
+        # 10 - 600 seconds
 
         duration = max(
             10,
@@ -175,6 +195,30 @@ def generate_music():
                 600
             )
         )
+
+
+        # -------------------------------------------------
+        # MUSIC STYLE PROMPT
+        # -------------------------------------------------
+
+        music_prompt = str(
+            data.get(
+                "music_prompt",
+                ""
+            )
+        ).strip()
+
+
+        if not music_prompt:
+
+            music_prompt = (
+                "Professional Nigerian Afrobeats and "
+                "Afropop production, energetic rhythm, "
+                "African percussion, deep warm bass, "
+                "melodic guitar and keyboard, catchy "
+                "hook, expressive vocals, modern radio "
+                "quality, polished professional studio sound."
+            )
 
 
         # -------------------------------------------------
@@ -197,25 +241,56 @@ def generate_music():
 
         payload = {
 
-            "prompt": prompt,
+            "prompt":
+                music_prompt,
 
-            "lyrics": "",
+            "lyrics":
+                lyrics,
 
-            "instrumental": False,
+            "instrumental":
+                False,
 
-            "duration": duration,
+            "duration":
+                duration,
 
-            "bpm": 110,
+            "bpm":
+                110,
 
-            "time_signature": "4/4",
+            "time_signature":
+                "4/4",
 
-            "seed": -1
+            "seed":
+                -1
 
         }
 
 
         print(
+            "======================================"
+        )
+
+        print(
             "GLOW MUSIC: sending request to Pixazo..."
+        )
+
+        print(
+            "Duration:",
+            duration,
+            "seconds"
+        )
+
+        print(
+            "Lyrics length:",
+            len(lyrics)
+        )
+
+        print(
+            "Music prompt:",
+            music_prompt
+        )
+
+        print(
+            "======================================"
         )
 
 
@@ -227,8 +302,37 @@ def generate_music():
 
             json=payload,
 
-            timeout=30
+            timeout=60
 
+        )
+
+
+        # -------------------------------------------------
+        # READ PIXAZO RESPONSE
+        # -------------------------------------------------
+
+        try:
+
+            result = response.json()
+
+        except Exception:
+
+            result = {
+
+                "message":
+                    response.text
+
+            }
+
+
+        print(
+            "PIXAZO HTTP STATUS:",
+            response.status_code
+        )
+
+        print(
+            "PIXAZO RESPONSE:",
+            result
         )
 
 
@@ -242,23 +346,23 @@ def generate_music():
             202
         ):
 
-            try:
+            error_message = (
 
-                error_data = (
-                    response.json()
+                result.get("message")
+
+                or result.get("error")
+
+                or result.get("detail")
+
+                or result.get("description")
+
+                or response.text
+
+                or (
+                    "Pixazo music request failed "
+                    f"with HTTP {response.status_code}."
                 )
 
-            except Exception:
-
-                error_data = {
-                    "message":
-                        response.text
-                }
-
-
-            print(
-                "PIXAZO GENERATION ERROR:",
-                error_data
             )
 
 
@@ -267,10 +371,13 @@ def generate_music():
                 "success": False,
 
                 "error":
-                    "Pixazo music request failed.",
+                    str(error_message),
+
+                "pixazo_status":
+                    response.status_code,
 
                 "details":
-                    error_data
+                    result
 
             }), response.status_code
 
@@ -278,9 +385,6 @@ def generate_music():
         # -------------------------------------------------
         # READ QUEUED JOB
         # -------------------------------------------------
-
-        result = response.json()
-
 
         request_id = result.get(
             "request_id"
@@ -294,7 +398,7 @@ def generate_music():
                 "success": False,
 
                 "error":
-                    "Pixazo did not return a request ID.",
+                    "Pixazo accepted the request but did not return a request ID.",
 
                 "details":
                     result
@@ -316,7 +420,11 @@ def generate_music():
 
             "success": True,
 
-            "status": "QUEUED",
+            "status":
+                result.get(
+                    "status",
+                    "QUEUED"
+                ),
 
             "request_id":
                 request_id
@@ -426,6 +534,16 @@ def music_status(request_id):
             }
 
 
+        print(
+            "PIXAZO STATUS:",
+            data
+        )
+
+
+        # -------------------------------------------------
+        # STATUS REQUEST ERROR
+        # -------------------------------------------------
+
         if response.status_code != 200:
 
             return jsonify({
@@ -530,6 +648,21 @@ def music_status(request_id):
             "ERROR"
         ):
 
+            error_message = (
+
+                data.get("error")
+
+                or data.get("message")
+
+                or data.get("detail")
+
+                or data.get("description")
+
+                or "Pixazo music generation failed."
+
+            )
+
+
             return jsonify({
 
                 "success": False,
@@ -538,10 +671,10 @@ def music_status(request_id):
                     status,
 
                 "error":
-                    data.get(
-                        "error",
-                        "Pixazo music generation failed."
-                    )
+                    str(error_message),
+
+                "details":
+                    data
 
             }), 500
 
@@ -578,44 +711,4 @@ def music_status(request_id):
         }), 502
 
 
-    except Exception as error:
-
-        print(
-            "PIXAZO STATUS ERROR:",
-            repr(error)
-        )
-
-
-        return jsonify({
-
-            "success": False,
-
-            "error":
-                str(error)
-
-        }), 500
-
-
-# =========================================================
-# START SERVER
-# =========================================================
-
-if __name__ == "__main__":
-
-    port = int(
-        os.getenv(
-            "PORT",
-            10000
-        )
-    )
-
-
-    app.run(
-
-        host="0.0.0.0",
-
-        port=port,
-
-        debug=False
-
-        )
+   
