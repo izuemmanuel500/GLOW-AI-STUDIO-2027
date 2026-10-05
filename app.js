@@ -1,6 +1,7 @@
 /* =========================================================
    GLOW AI STUDIO 2027
    MUSIC + VIDEO STUDIO
+   PIXAZO MUSIC CONNECTION
    ========================================================= */
 
 
@@ -140,44 +141,40 @@ window.openStudio = function (type) {
                 <button
                     type="submit"
                     class="primary-btn"
+                    id="generateMusicBtn"
                 >
                     🎵 Generate Music
                 </button>
+
+
+                <div
+                    id="musicStatus"
+                    class="music-status"
+                ></div>
+
+                <div
+                    id="musicResult"
+                    class="music-result"
+                ></div>
 
             </form>
 
         `;
 
 
+        /* =================================================
+           MUSIC FORM
+        ================================================= */
+
         const musicForm =
             document.getElementById("musicForm");
+
 
         if (musicForm) {
 
             musicForm.addEventListener(
                 "submit",
-                function (event) {
-
-                    event.preventDefault();
-
-                    const prompt =
-                        document.getElementById("songPrompt").value.trim();
-
-                    if (!prompt) {
-
-                        alert(
-                            "Please describe the song you want to create."
-                        );
-
-                        return;
-                    }
-
-                    alert(
-                        "🎵 GLOW MUSIC\n\n" +
-                        "Your music request has been received."
-                    );
-
-                }
+                handleMusicGeneration
             );
 
         }
@@ -293,8 +290,13 @@ window.openStudio = function (type) {
         `;
 
 
+        /* =================================================
+           VIDEO FORM
+        ================================================= */
+
         const videoForm =
             document.getElementById("videoForm");
+
 
         if (videoForm) {
 
@@ -304,8 +306,13 @@ window.openStudio = function (type) {
 
                     event.preventDefault();
 
+                    const promptElement =
+                        document.getElementById("videoPrompt");
+
                     const prompt =
-                        document.getElementById("videoPrompt").value.trim();
+                        promptElement
+                            ? promptElement.value.trim()
+                            : "";
 
                     if (!prompt) {
 
@@ -315,6 +322,7 @@ window.openStudio = function (type) {
 
                         return;
                     }
+
 
                     alert(
                         "🎬 GLOW VIDEO\n\n" +
@@ -341,6 +349,459 @@ window.openStudio = function (type) {
 
 
 /* =========================================================
+   MUSIC GENERATION
+   ========================================================= */
+
+async function handleMusicGeneration(event) {
+
+    event.preventDefault();
+
+
+    const promptElement =
+        document.getElementById("songPrompt");
+
+    const genreElement =
+        document.getElementById("genre");
+
+    const moodElement =
+        document.getElementById("mood");
+
+    const button =
+        document.getElementById("generateMusicBtn");
+
+    const status =
+        document.getElementById("musicStatus");
+
+    const result =
+        document.getElementById("musicResult");
+
+
+    if (!promptElement || !button || !status || !result) {
+
+        console.error(
+            "GLOW MUSIC ERROR: Music form elements missing."
+        );
+
+        return;
+
+    }
+
+
+    const prompt =
+        promptElement.value.trim();
+
+
+    if (!prompt) {
+
+        alert(
+            "Please describe the song you want to create."
+        );
+
+        return;
+
+    }
+
+
+    const genre =
+        genreElement
+            ? genreElement.value
+            : "Afrobeat";
+
+
+    const mood =
+        moodElement
+            ? moodElement.value
+            : "Energetic";
+
+
+    /* =====================================================
+       COMBINE USER PROMPT + MUSIC SETTINGS
+    ===================================================== */
+
+    const fullPrompt =
+        `${prompt}. Genre: ${genre}. Mood: ${mood}. Professional music production, clear vocals, strong instrumentation and polished studio-quality sound.`;
+
+
+    /* =====================================================
+       LOCK BUTTON
+    ===================================================== */
+
+    button.disabled = true;
+
+    button.textContent =
+        "⏳ Starting Music Generation...";
+
+
+    status.innerHTML = `
+        <p>
+            🎵 GLOW is sending your idea to the AI music engine...
+        </p>
+    `;
+
+    result.innerHTML = "";
+
+
+    try {
+
+        /* =================================================
+           SEND TO OUR FLASK BACKEND
+        ================================================= */
+
+        const response =
+            await fetch(
+                "/api/music",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        prompt:
+                            fullPrompt,
+
+                        music_length_ms:
+                            60000
+
+                    })
+
+                }
+            );
+
+
+        let data;
+
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (jsonError) {
+
+            throw new Error(
+                "The server returned an invalid response."
+            );
+
+        }
+
+
+        if (!response.ok || !data.success) {
+
+            const message =
+                data.error ||
+                "Music generation request failed.";
+
+            throw new Error(message);
+
+        }
+
+
+        if (!data.request_id) {
+
+            throw new Error(
+                "Pixazo did not return a request ID."
+            );
+
+        }
+
+
+        /* =================================================
+           START POLLING
+        ================================================= */
+
+        status.innerHTML = `
+            <p>
+                🎵 Music request accepted.
+            </p>
+
+            <p>
+                ⏳ GLOW is generating your song...
+            </p>
+        `;
+
+
+        button.textContent =
+            "⏳ Generating Music...";
+
+
+        await pollMusicStatus(
+            data.request_id,
+            status,
+            result
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "GLOW MUSIC ERROR:",
+            error
+        );
+
+
+        status.innerHTML = `
+            <p>
+                ❌ Music generation failed.
+            </p>
+        `;
+
+
+        result.innerHTML = `
+            <div class="music-error">
+                ${escapeHtml(
+                    error.message ||
+                    "Something went wrong."
+                )}
+            </div>
+        `;
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "🎵 Generate Music";
+
+    }
+
+}
+
+
+/* =========================================================
+   POLL PIXAZO MUSIC STATUS
+   ========================================================= */
+
+async function pollMusicStatus(
+    requestId,
+    statusElement,
+    resultElement
+) {
+
+    const maxAttempts =
+        40;
+
+    const delayMs =
+        5000;
+
+
+    for (
+        let attempt = 1;
+        attempt <= maxAttempts;
+        attempt++
+    ) {
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/music/status/${encodeURIComponent(requestId)}`
+                );
+
+
+            let data;
+
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (jsonError) {
+
+                throw new Error(
+                    "Invalid status response from server."
+                );
+
+            }
+
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.error ||
+                    "Could not check music generation status."
+                );
+
+            }
+
+
+            const currentStatus =
+                String(
+                    data.status ||
+                    "PROCESSING"
+                ).toUpperCase();
+
+
+            /* =============================================
+               COMPLETED
+            ============================================= */
+
+            if (
+                currentStatus ===
+                "COMPLETED"
+            ) {
+
+                if (!data.audio) {
+
+                    throw new Error(
+                        "Music was completed but no audio URL was returned."
+                    );
+
+                }
+
+
+                statusElement.innerHTML = `
+                    <p>
+                        ✅ Your music is ready!
+                    </p>
+                `;
+
+
+                resultElement.innerHTML = `
+
+                    <div class="generated-music">
+
+                        <h3>
+                            🎵 Your GLOW Creation
+                        </h3>
+
+                        <audio
+                            controls
+                            preload="metadata"
+                            src="${escapeHtml(data.audio)}"
+                        >
+                        </audio>
+
+                        <a
+                            href="${escapeHtml(data.audio)}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="primary-btn"
+                        >
+                            🎧 Open Audio
+                        </a>
+
+                    </div>
+
+                `;
+
+
+                return;
+
+            }
+
+
+            /* =============================================
+               FAILED
+            ============================================= */
+
+            if (
+                currentStatus === "FAILED" ||
+                currentStatus === "ERROR"
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    "Pixazo could not generate the music."
+                );
+
+            }
+
+
+            /* =============================================
+               STILL PROCESSING
+            ============================================= */
+
+            const progressText =
+                currentStatus === "QUEUED"
+                    ? "waiting in the music queue"
+                    : "creating your song";
+
+
+            statusElement.innerHTML = `
+                <p>
+                    🎵 GLOW is ${progressText}...
+                </p>
+
+                <p>
+                    ⏳ Please wait...
+                </p>
+            `;
+
+
+            if (
+                attempt <
+                maxAttempts
+            ) {
+
+                await sleep(
+                    delayMs
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "GLOW MUSIC STATUS ERROR:",
+                error
+            );
+
+            throw error;
+
+        }
+
+    }
+
+
+    throw new Error(
+        "Music generation is taking longer than expected. Please try again."
+    );
+
+}
+
+
+/* =========================================================
+   SLEEP
+   ========================================================= */
+
+function sleep(milliseconds) {
+
+    return new Promise(
+        function (resolve) {
+
+            setTimeout(
+                resolve,
+                milliseconds
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SAFE HTML TEXT
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
    CLOSE STUDIO
    ========================================================= */
 
@@ -350,8 +811,11 @@ window.closeStudio = function () {
         document.getElementById("studioModal");
 
     if (!studioModal) {
+
         return;
+
     }
+
 
     studioModal.classList.remove("active");
 
