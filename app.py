@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import requests
 
@@ -22,10 +22,8 @@ from werkzeug.security import (
 
 # =========================================================
 # GLOW AI STUDIO 2027
-# STAGE 1
-#
-# ACCOUNTS + LOGIN + SUBSCRIPTIONS
-# + CREDITS + PIXAZO MUSIC ENGINE
+# ACCOUNTS + LOGIN + CREDITS + SUBSCRIPTIONS
+# + PIXAZO MUSIC ENGINE
 # =========================================================
 
 app = Flask(__name__)
@@ -64,11 +62,9 @@ PIXAZO_API_KEY = os.getenv(
     "PIXAZO_API_KEY"
 )
 
-
 PIXAZO_GENERATE_URL = (
     "https://gateway.pixazo.ai/tracks/v1/generate"
 )
-
 
 PIXAZO_STATUS_URL = (
     "https://gateway.pixazo.ai/v2/requests/status/"
@@ -76,7 +72,7 @@ PIXAZO_STATUS_URL = (
 
 
 # =========================================================
-# SUBSCRIPTION SETTINGS
+# CREDIT / PLAN SETTINGS
 # =========================================================
 
 FREE_CREDITS = 10
@@ -89,34 +85,19 @@ STUDIO_WEEKLY_CREDITS = 1000
 
 
 # =========================================================
-# DATABASE CONNECTION
+# DATABASE
 # =========================================================
 
 def get_db():
-
-    connection = sqlite3.connect(
-        DATABASE
-    )
-
+    connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
-
     return connection
 
-
-# =========================================================
-# CREATE DATABASE
-# =========================================================
 
 def init_database():
 
     db = get_db()
-
     cursor = db.cursor()
-
-
-    # -----------------------------------------------------
-    # USERS
-    # -----------------------------------------------------
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -149,11 +130,6 @@ def init_database():
         )
     """)
 
-
-    # -----------------------------------------------------
-    # GENERATION HISTORY
-    # -----------------------------------------------------
-
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS creations (
 
@@ -180,11 +156,6 @@ def init_database():
         )
     """)
 
-
-    # -----------------------------------------------------
-    # SUBSCRIPTION HISTORY
-    # -----------------------------------------------------
-
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS subscriptions (
 
@@ -210,15 +181,9 @@ def init_database():
         )
     """)
 
-
     db.commit()
-
     db.close()
 
-
-# =========================================================
-# INITIALIZE DATABASE
-# =========================================================
 
 init_database()
 
@@ -227,16 +192,38 @@ init_database()
 # TIME HELPERS
 # =========================================================
 
-def now_utc():
-
-    return datetime.now(
-        timezone.utc
-    )
-
-
 def iso_now():
+    return datetime.now(timezone.utc).isoformat()
 
-    return now_utc().isoformat()
+
+# =========================================================
+# USER HELPER
+# =========================================================
+
+def user_to_dict(user):
+
+    if not user:
+        return None
+
+    return {
+        "id": user["id"],
+        "username": user["username"],
+        "email": user["email"],
+        "profile_name": (
+            user["profile_name"]
+            or user["username"]
+        ),
+        "profile_photo": user["profile_photo"],
+        "plan": user["plan"],
+        "credits": user["credits"],
+        "subscription_status": (
+            user["subscription_status"]
+        ),
+        "subscription_expires_at": (
+            user["subscription_expires_at"]
+        ),
+        "created_at": user["created_at"]
+    }
 
 
 # =========================================================
@@ -262,7 +249,7 @@ def static_files(filename):
 
 
 # =========================================================
-# HEALTH CHECK
+# HEALTH
 # =========================================================
 
 @app.route(
@@ -272,22 +259,14 @@ def static_files(filename):
 def health():
 
     return jsonify({
-
         "status": "ok",
-
-        "app":
-            "GLOW AI STUDIO 2027",
-
-        "accounts":
-            "enabled",
-
-        "music_engine":
-            (
-                "Pixazo Tracks"
-                if PIXAZO_API_KEY
-                else "missing_pixazo_api_key"
-            )
-
+        "app": "GLOW AI STUDIO 2027",
+        "accounts": "enabled",
+        "music_engine": (
+            "Pixazo Tracks"
+            if PIXAZO_API_KEY
+            else "missing_pixazo_api_key"
+        )
     })
 
 
@@ -310,14 +289,12 @@ def signup():
             or {}
         )
 
-
         username = str(
             data.get(
                 "username",
                 ""
             )
         ).strip()
-
 
         email = str(
             data.get(
@@ -326,7 +303,6 @@ def signup():
             )
         ).strip().lower()
 
-
         password = str(
             data.get(
                 "password",
@@ -334,149 +310,95 @@ def signup():
             )
         )
 
-
-        # -------------------------------------------------
-        # VALIDATION
-        # -------------------------------------------------
-
         if not username:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Username is required."
-
             }), 400
-
 
         if len(username) < 3:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Username must contain at least 3 characters."
-
             }), 400
-
 
         if len(username) > 30:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Username cannot exceed 30 characters."
-
             }), 400
-
 
         if not email or "@" not in email:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Please enter a valid email address."
-
             }), 400
-
 
         if len(password) < 8:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Password must contain at least 8 characters."
-
             }), 400
-
 
         db = get_db()
 
-        cursor = db.cursor()
-
-
-        # -------------------------------------------------
-        # CHECK USERNAME
-        # -------------------------------------------------
-
-        existing_username = cursor.execute(
+        existing_username = db.execute(
             """
             SELECT id
             FROM users
             WHERE username = ?
+            LIMIT 1
             """,
             (username,)
         ).fetchone()
-
 
         if existing_username:
 
             db.close()
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "That username is already taken."
-
             }), 409
 
-
-        # -------------------------------------------------
-        # CHECK EMAIL
-        # -------------------------------------------------
-
-        existing_email = cursor.execute(
+        existing_email = db.execute(
             """
             SELECT id
             FROM users
             WHERE email = ?
+            LIMIT 1
             """,
             (email,)
         ).fetchone()
-
 
         if existing_email:
 
             db.close()
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "An account with that email already exists."
-
             }), 409
-
-
-        # -------------------------------------------------
-        # PASSWORD HASH
-        # -------------------------------------------------
 
         password_hash = generate_password_hash(
             password
         )
 
-
         timestamp = iso_now()
 
-
-        # -------------------------------------------------
-        # CREATE USER
-        # -------------------------------------------------
-
-        cursor.execute(
+        cursor = db.execute(
             """
             INSERT INTO users (
                 username,
@@ -489,7 +411,6 @@ def signup():
                 created_at,
                 updated_at
             )
-
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
@@ -505,66 +426,35 @@ def signup():
             )
         )
 
-
         user_id = cursor.lastrowid
 
-
         db.commit()
-
         db.close()
 
-
-        # -------------------------------------------------
-        # LOGIN NEW USER
-        # -------------------------------------------------
-
         session.clear()
-
         session["user_id"] = user_id
-
         session["username"] = username
 
-
         return jsonify({
-
             "success": True,
-
             "message":
                 "GLOW account created successfully.",
-
             "user": {
-
-                "id":
-                    user_id,
-
-                "username":
-                    username,
-
-                "email":
-                    email,
-
-                "plan":
-                    "free",
-
-                "credits":
-                    FREE_CREDITS
-
+                "id": user_id,
+                "username": username,
+                "email": email,
+                "plan": "free",
+                "credits": FREE_CREDITS
             }
-
         }), 201
-
 
     except sqlite3.IntegrityError:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Username or email is already registered."
-
         }), 409
-
 
     except Exception as error:
 
@@ -573,14 +463,10 @@ def signup():
             repr(error)
         )
 
-
         return jsonify({
-
             "success": False,
-
             "error":
                 "Could not create your GLOW account."
-
         }), 500
 
 
@@ -603,14 +489,12 @@ def login():
             or {}
         )
 
-
         login_value = str(
             data.get(
                 "username",
                 ""
             )
         ).strip()
-
 
         password = str(
             data.get(
@@ -619,33 +503,23 @@ def login():
             )
         )
 
-
         if not login_value:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Username or email is required."
-
             }), 400
-
 
         if not password:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Password is required."
-
             }), 400
 
-
         db = get_db()
-
 
         user = db.execute(
             """
@@ -661,21 +535,15 @@ def login():
             )
         ).fetchone()
 
-
         db.close()
-
 
         if not user:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Invalid username/email or password."
-
             }), 401
-
 
         if not check_password_hash(
             user["password_hash"],
@@ -683,38 +551,23 @@ def login():
         ):
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Invalid username/email or password."
-
             }), 401
-
-
-        # -------------------------------------------------
-        # LOGIN SESSION
-        # -------------------------------------------------
 
         session.clear()
 
         session["user_id"] = user["id"]
-
         session["username"] = user["username"]
 
-
         return jsonify({
-
             "success": True,
-
             "message":
                 "Welcome back to GLOW.",
-
             "user":
                 user_to_dict(user)
-
         })
-
 
     except Exception as error:
 
@@ -723,14 +576,10 @@ def login():
             repr(error)
         )
 
-
         return jsonify({
-
             "success": False,
-
             "error":
                 "Login failed."
-
         }), 500
 
 
@@ -746,14 +595,10 @@ def logout():
 
     session.clear()
 
-
     return jsonify({
-
         "success": True,
-
         "message":
             "You have been logged out."
-
     })
 
 
@@ -767,132 +612,94 @@ def logout():
 )
 def current_user():
 
-    user_id =
-        session.get(
-            "user_id"
-        )
-
+    user_id = session.get("user_id")
 
     if not user_id:
 
         return jsonify({
-
             "success": True,
-
             "logged_in": False,
-
             "user": None
-
         })
 
-
     db = get_db()
-
 
     user = db.execute(
         """
         SELECT *
         FROM users
         WHERE id = ?
+        LIMIT 1
         """,
         (user_id,)
     ).fetchone()
 
-
     db.close()
-
 
     if not user:
 
         session.clear()
 
-
         return jsonify({
-
             "success": True,
-
             "logged_in": False,
-
             "user": None
-
         })
 
-
     return jsonify({
-
         "success": True,
-
         "logged_in": True,
-
         "user":
             user_to_dict(user)
-
     })
 
 
 # =========================================================
-# USER PROFILE
+# PROFILE
 # =========================================================
 
 @app.route(
     "/api/profile",
     methods=["GET"]
 )
-def profile():
+def get_profile():
 
-    user_id =
-        session.get(
-            "user_id"
-        )
-
+    user_id = session.get("user_id")
 
     if not user_id:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Please log in first."
-
         }), 401
 
-
     db = get_db()
-
 
     user = db.execute(
         """
         SELECT *
         FROM users
         WHERE id = ?
+        LIMIT 1
         """,
         (user_id,)
     ).fetchone()
 
-
     db.close()
-
 
     if not user:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "User account was not found."
-
         }), 404
 
-
     return jsonify({
-
         "success": True,
-
         "user":
             user_to_dict(user)
-
     })
 
 
@@ -906,23 +713,15 @@ def profile():
 )
 def update_profile():
 
-    user_id =
-        session.get(
-            "user_id"
-        )
-
+    user_id = session.get("user_id")
 
     if not user_id:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Please log in first."
-
         }), 401
-
 
     data = (
         request.get_json(
@@ -931,14 +730,12 @@ def update_profile():
         or {}
     )
 
-
     profile_name = str(
         data.get(
             "profile_name",
             ""
         )
     ).strip()
-
 
     profile_photo = str(
         data.get(
@@ -947,43 +744,31 @@ def update_profile():
         )
     ).strip()
 
-
     if not profile_name:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Profile name cannot be empty."
-
         }), 400
-
 
     if len(profile_name) > 60:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Profile name is too long."
-
         }), 400
 
-
     db = get_db()
-
 
     db.execute(
         """
         UPDATE users
-
         SET
             profile_name = ?,
             profile_photo = ?,
             updated_at = ?
-
         WHERE id = ?
         """,
         (
@@ -994,85 +779,31 @@ def update_profile():
         )
     )
 
-
     db.commit()
-
 
     user = db.execute(
         """
         SELECT *
         FROM users
         WHERE id = ?
+        LIMIT 1
         """,
         (user_id,)
     ).fetchone()
 
-
     db.close()
 
-
     return jsonify({
-
         "success": True,
-
         "message":
             "Profile updated.",
-
         "user":
             user_to_dict(user)
-
     })
 
 
 # =========================================================
-# USER HELPER
-# =========================================================
-
-def user_to_dict(user):
-
-    if not user:
-
-        return None
-
-
-    return {
-
-        "id":
-            user["id"],
-
-        "username":
-            user["username"],
-
-        "email":
-            user["email"],
-
-        "profile_name":
-            user["profile_name"]
-            or user["username"],
-
-        "profile_photo":
-            user["profile_photo"],
-
-        "plan":
-            user["plan"],
-
-        "credits":
-            user["credits"],
-
-        "subscription_status":
-            user["subscription_status"],
-
-        "subscription_expires_at":
-            user["subscription_expires_at"],
-
-        "created_at":
-            user["created_at"]
-
-    }
-
-
-# =========================================================
-# SUBSCRIPTION INFORMATION
+# SUBSCRIPTION
 # =========================================================
 
 @app.route(
@@ -1081,26 +812,17 @@ def user_to_dict(user):
 )
 def subscription():
 
-    user_id =
-        session.get(
-            "user_id"
-        )
-
+    user_id = session.get("user_id")
 
     if not user_id:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Please log in first."
-
         }), 401
 
-
     db = get_db()
-
 
     user = db.execute(
         """
@@ -1109,55 +831,90 @@ def subscription():
             credits,
             subscription_status,
             subscription_expires_at
-
         FROM users
-
         WHERE id = ?
+        LIMIT 1
         """,
         (user_id,)
     ).fetchone()
 
-
     db.close()
-
 
     if not user:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "User not found."
-
         }), 404
 
+    return jsonify({
+        "success": True,
+        "subscription": {
+            "plan": user["plan"],
+            "credits": user["credits"],
+            "status":
+                user["subscription_status"],
+            "expires_at":
+                user["subscription_expires_at"]
+        }
+    })
+
+
+# =========================================================
+# AVAILABLE PLANS
+# =========================================================
+
+@app.route(
+    "/api/plans",
+    methods=["GET"]
+)
+def plans():
 
     return jsonify({
 
         "success": True,
 
-        "subscription": {
+        "plans": [
 
-            "plan":
-                user["plan"],
+            {
+                "id": "free",
+                "name": "GLOW Free",
+                "billing": "free",
+                "credits": FREE_CREDITS
+            },
 
-            "credits":
-                user["credits"],
+            {
+                "id": "creator",
+                "name": "GLOW Creator",
+                "billing": "weekly",
+                "credits":
+                    CREATOR_WEEKLY_CREDITS
+            },
 
-            "status":
-                user["subscription_status"],
+            {
+                "id": "pro",
+                "name": "GLOW Pro",
+                "billing": "weekly",
+                "credits":
+                    PRO_WEEKLY_CREDITS
+            },
 
-            "expires_at":
-                user["subscription_expires_at"]
+            {
+                "id": "studio",
+                "name": "GLOW Studio",
+                "billing": "weekly",
+                "credits":
+                    STUDIO_WEEKLY_CREDITS
+            }
 
-        }
+        ]
 
     })
 
 
 # =========================================================
-# INTERNAL CREDIT CHECK
+# CREDIT SYSTEM
 # =========================================================
 
 def consume_credit(
@@ -1167,16 +924,15 @@ def consume_credit(
 
     db = get_db()
 
-
     user = db.execute(
         """
         SELECT credits
         FROM users
         WHERE id = ?
+        LIMIT 1
         """,
         (user_id,)
     ).fetchone()
-
 
     if not user:
 
@@ -1184,22 +940,18 @@ def consume_credit(
 
         return False
 
-
     if user["credits"] < amount:
 
         db.close()
 
         return False
 
-
     db.execute(
         """
         UPDATE users
-
         SET
             credits = credits - ?,
             updated_at = ?
-
         WHERE id = ?
         """,
         (
@@ -1209,11 +961,8 @@ def consume_credit(
         )
     )
 
-
     db.commit()
-
     db.close()
-
 
     return True
 
@@ -1230,47 +979,23 @@ def generate_music():
 
     try:
 
-        # -------------------------------------------------
-        # LOGIN REQUIRED
-        # -------------------------------------------------
-
-        user_id =
-            session.get(
-                "user_id"
-            )
-
+        user_id = session.get("user_id")
 
         if not user_id:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Please create a GLOW account or log in before generating music."
-
             }), 401
-
-
-        # -------------------------------------------------
-        # CHECK API KEY
-        # -------------------------------------------------
 
         if not PIXAZO_API_KEY:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "PIXAZO_API_KEY is missing on the server."
-
             }), 500
-
-
-        # -------------------------------------------------
-        # READ REQUEST
-        # -------------------------------------------------
 
         data = (
             request.get_json(
@@ -1279,14 +1004,12 @@ def generate_music():
             or {}
         )
 
-
         prompt = str(
             data.get(
                 "prompt",
                 ""
             )
         ).strip()
-
 
         lyrics = str(
             data.get(
@@ -1295,37 +1018,22 @@ def generate_music():
             )
         ).strip()
 
-
         if not prompt and not lyrics:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Please enter your song idea or lyrics."
-
             }), 400
-
-
-        # -------------------------------------------------
-        # IMPORTANT
-        # -------------------------------------------------
 
         if not lyrics:
 
             lyrics = prompt
 
-
-        # -------------------------------------------------
-        # DURATION
-        # -------------------------------------------------
-
         length_ms = data.get(
             "music_length_ms",
             60000
         )
-
 
         try:
 
@@ -1340,11 +1048,9 @@ def generate_music():
 
             length_ms = 60000
 
-
         duration = int(
             length_ms / 1000
         )
-
 
         duration = max(
             10,
@@ -1354,18 +1060,12 @@ def generate_music():
             )
         )
 
-
-        # -------------------------------------------------
-        # MUSIC STYLE
-        # -------------------------------------------------
-
         music_prompt = str(
             data.get(
                 "music_prompt",
                 ""
             )
         ).strip()
-
 
         if not music_prompt:
 
@@ -1379,63 +1079,47 @@ def generate_music():
                 "sound."
             )
 
-
         # -------------------------------------------------
         # CHECK CREDITS
         # -------------------------------------------------
 
         db = get_db()
 
-
         user = db.execute(
             """
             SELECT
                 credits,
-                plan,
-                subscription_status,
-                subscription_expires_at
-
+                plan
             FROM users
-
             WHERE id = ?
+            LIMIT 1
             """,
             (user_id,)
         ).fetchone()
 
-
         db.close()
-
 
         if not user:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "User account not found."
-
             }), 404
-
 
         if user["credits"] <= 0:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "You have no GLOW credits remaining. Choose a subscription plan to continue."
-
             }), 402
-
 
         # -------------------------------------------------
         # PIXAZO REQUEST
         # -------------------------------------------------
 
         headers = {
-
             "Content-Type":
                 "application/json",
 
@@ -1444,12 +1128,9 @@ def generate_music():
 
             "Ocp-Apim-Subscription-Key":
                 PIXAZO_API_KEY
-
         }
 
-
         payload = {
-
             "prompt":
                 music_prompt,
 
@@ -1470,9 +1151,7 @@ def generate_music():
 
             "seed":
                 -1
-
         }
-
 
         print(
             "======================================"
@@ -1502,23 +1181,12 @@ def generate_music():
             "======================================"
         )
 
-
         response = requests.post(
-
             PIXAZO_GENERATE_URL,
-
             headers=headers,
-
             json=payload,
-
             timeout=60
-
         )
-
-
-        # -------------------------------------------------
-        # READ RESPONSE
-        # -------------------------------------------------
 
         try:
 
@@ -1527,28 +1195,19 @@ def generate_music():
         except Exception:
 
             result = {
-
                 "message":
                     response.text
-
             }
-
 
         print(
             "PIXAZO HTTP STATUS:",
             response.status_code
         )
 
-
         print(
             "PIXAZO RESPONSE:",
             result
         )
-
-
-        # -------------------------------------------------
-        # PIXAZO ERROR
-        # -------------------------------------------------
 
         if response.status_code not in (
             200,
@@ -1557,86 +1216,60 @@ def generate_music():
         ):
 
             error_message = (
-
                 result.get("message")
-
                 or result.get("error")
-
                 or result.get("detail")
-
                 or result.get("description")
-
                 or response.text
-
                 or (
                     "Pixazo music request failed "
                     f"with HTTP {response.status_code}."
                 )
-
             )
 
-
             return jsonify({
-
                 "success": False,
-
                 "error":
                     str(error_message),
-
                 "pixazo_status":
                     response.status_code,
-
                 "details":
                     result
-
             }), response.status_code
-
-
-        # -------------------------------------------------
-        # REQUEST ID
-        # -------------------------------------------------
 
         request_id = result.get(
             "request_id"
         )
 
-
         if not request_id:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Pixazo accepted the request but did not return a request ID.",
-
                 "details":
                     result
-
             }), 502
 
+        print(
+            "GLOW MUSIC REQUEST ID:",
+            request_id
+        )
 
         # -------------------------------------------------
         # CONSUME ONE CREDIT
         # -------------------------------------------------
 
-        credit_used = consume_credit(
+        if not consume_credit(
             user_id,
             1
-        )
-
-
-        if not credit_used:
+        ):
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Unable to reserve a GLOW credit."
-
             }), 402
-
 
         # -------------------------------------------------
         # SAVE CREATION
@@ -1644,20 +1277,16 @@ def generate_music():
 
         db = get_db()
 
-
         db.execute(
             """
             INSERT INTO creations (
-
                 user_id,
                 creation_type,
                 prompt,
                 status,
                 request_id,
                 created_at
-
             )
-
             VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
@@ -1670,27 +1299,19 @@ def generate_music():
             )
         )
 
-
         db.commit()
-
         db.close()
 
-
         return jsonify({
-
             "success": True,
-
             "status":
                 result.get(
                     "status",
                     "QUEUED"
                 ),
-
             "request_id":
                 request_id
-
         })
-
 
     except requests.RequestException as error:
 
@@ -1699,19 +1320,13 @@ def generate_music():
             repr(error)
         )
 
-
         return jsonify({
-
             "success": False,
-
             "error":
                 "Could not connect to Pixazo.",
-
             "details":
                 str(error)
-
         }), 502
-
 
     except Exception as error:
 
@@ -1720,14 +1335,10 @@ def generate_music():
             repr(error)
         )
 
-
         return jsonify({
-
             "success": False,
-
             "error":
                 str(error)
-
         }), 500
 
 
@@ -1743,60 +1354,39 @@ def music_status(request_id):
 
     try:
 
-        user_id =
-            session.get(
-                "user_id"
-            )
-
+        user_id = session.get("user_id")
 
         if not user_id:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Please log in first."
-
             }), 401
-
 
         if not PIXAZO_API_KEY:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "PIXAZO_API_KEY is missing."
-
             }), 500
 
-
         headers = {
-
             "Ocp-Apim-Subscription-Key":
                 PIXAZO_API_KEY
-
         }
-
 
         url = (
             PIXAZO_STATUS_URL
             + request_id
         )
 
-
         response = requests.get(
-
             url,
-
             headers=headers,
-
             timeout=30
-
         )
-
 
         try:
 
@@ -1805,33 +1395,24 @@ def music_status(request_id):
         except Exception:
 
             data = {
-
                 "error":
                     response.text
-
             }
-
 
         print(
             "PIXAZO STATUS:",
             data
         )
 
-
         if response.status_code != 200:
 
             return jsonify({
-
                 "success": False,
-
                 "error":
                     "Could not check Pixazo job status.",
-
                 "details":
                     data
-
             }), response.status_code
-
 
         status = str(
             data.get(
@@ -1839,7 +1420,6 @@ def music_status(request_id):
                 ""
             )
         ).upper()
-
 
         # -------------------------------------------------
         # COMPLETED
@@ -1854,14 +1434,12 @@ def music_status(request_id):
                 or {}
             )
 
-
             media_urls = (
                 output.get(
                     "media_url"
                 )
                 or []
             )
-
 
             if isinstance(
                 media_urls,
@@ -1872,43 +1450,28 @@ def music_status(request_id):
                     media_urls
                 ]
 
-
             if not media_urls:
 
                 return jsonify({
-
                     "success": False,
-
                     "status":
                         "ERROR",
-
                     "error":
                         "Pixazo completed the job but returned no audio URL.",
-
                     "details":
                         data
-
                 }), 502
-
 
             audio_url = media_urls[0]
 
-
-            # -------------------------------------------------
-            # SAVE COMPLETED CREATION
-            # -------------------------------------------------
-
             db = get_db()
-
 
             db.execute(
                 """
                 UPDATE creations
-
                 SET
                     status = ?,
                     media_url = ?
-
                 WHERE
                     user_id = ?
                     AND request_id = ?
@@ -1921,30 +1484,21 @@ def music_status(request_id):
                 )
             )
 
-
             db.commit()
-
             db.close()
 
-
             return jsonify({
-
                 "success": True,
-
                 "status":
                     "COMPLETED",
-
                 "audio":
                     audio_url,
-
                 "format":
                     output.get(
                         "media_type",
                         "audio/mpeg"
                     )
-
             })
-
 
         # -------------------------------------------------
         # FAILED
@@ -1956,29 +1510,19 @@ def music_status(request_id):
         ):
 
             error_message = (
-
                 data.get("error")
-
                 or data.get("message")
-
                 or data.get("detail")
-
                 or data.get("description")
-
                 or "Pixazo music generation failed."
-
             )
 
-
             db = get_db()
-
 
             db.execute(
                 """
                 UPDATE creations
-
                 SET status = ?
-
                 WHERE
                     user_id = ?
                     AND request_id = ?
@@ -1990,59 +1534,40 @@ def music_status(request_id):
                 )
             )
 
-
             db.commit()
-
             db.close()
 
-
             return jsonify({
-
                 "success": False,
-
                 "status":
                     status,
-
                 "error":
                     str(error_message),
-
                 "details":
                     data
-
             }), 500
-
 
         # -------------------------------------------------
         # PROCESSING
         # -------------------------------------------------
 
         return jsonify({
-
             "success": True,
-
             "status":
                 status or "PROCESSING",
-
             "request_id":
                 request_id
-
         })
-
 
     except requests.RequestException as error:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Could not connect to Pixazo status service.",
-
             "details":
                 str(error)
-
         }), 502
-
 
     except Exception as error:
 
@@ -2051,14 +1576,10 @@ def music_status(request_id):
             repr(error)
         )
 
-
         return jsonify({
-
             "success": False,
-
             "error":
                 str(error)
-
         }), 500
 
 
@@ -2072,26 +1593,17 @@ def music_status(request_id):
 )
 def my_creations():
 
-    user_id =
-        session.get(
-            "user_id"
-        )
-
+    user_id = session.get("user_id")
 
     if not user_id:
 
         return jsonify({
-
             "success": False,
-
             "error":
                 "Please log in first."
-
         }), 401
 
-
     db = get_db()
-
 
     rows = db.execute(
         """
@@ -2103,29 +1615,21 @@ def my_creations():
             media_url,
             request_id,
             created_at
-
         FROM creations
-
         WHERE user_id = ?
-
         ORDER BY id DESC
-
         LIMIT 100
         """,
         (user_id,)
     ).fetchall()
 
-
     db.close()
 
-
     creations = []
-
 
     for row in rows:
 
         creations.append({
-
             "id":
                 row["id"],
 
@@ -2146,107 +1650,17 @@ def my_creations():
 
             "created_at":
                 row["created_at"]
-
         })
 
-
     return jsonify({
-
         "success": True,
-
         "creations":
             creations
-
     })
 
 
 # =========================================================
-# SUBSCRIPTION PLAN PREVIEW
-# =========================================================
-
-@app.route(
-    "/api/plans",
-    methods=["GET"]
-)
-def plans():
-
-    return jsonify({
-
-        "success": True,
-
-        "plans": [
-
-            {
-
-                "id":
-                    "free",
-
-                "name":
-                    "GLOW Free",
-
-                "billing":
-                    "free",
-
-                "credits":
-                    FREE_CREDITS
-
-            },
-
-            {
-
-                "id":
-                    "creator",
-
-                "name":
-                    "GLOW Creator",
-
-                "billing":
-                    "weekly",
-
-                "credits":
-                    CREATOR_WEEKLY_CREDITS
-
-            },
-
-            {
-
-                "id":
-                    "pro",
-
-                "name":
-                    "GLOW Pro",
-
-                "billing":
-                    "weekly",
-
-                "credits":
-                    PRO_WEEKLY_CREDITS
-
-            },
-
-            {
-
-                "id":
-                    "studio",
-
-                "name":
-                    "GLOW Studio",
-
-                "billing":
-                    "weekly",
-
-                "credits":
-                    STUDIO_WEEKLY_CREDITS
-
-            }
-
-        ]
-
-    })
-
-
-# =========================================================
-# RUN SERVER
+# SERVER
 # =========================================================
 
 if __name__ == "__main__":
