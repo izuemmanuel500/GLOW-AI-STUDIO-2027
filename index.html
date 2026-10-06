@@ -2,31 +2,21 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>GLOW AI STUDIO 2027</title>
 
     <meta
         name="description"
-        content="GLOW AI STUDIO 2027 — Create AI music and AI videos from your imagination."
+        content="GLOW AI STUDIO 2027 — Create AI music, videos, images and unforgettable experiences."
     >
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
+    <link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
-
 
 <!-- =====================================================
      HEADER
@@ -41,15 +31,11 @@
         </div>
 
         <div>
-
-            <strong>
-                GLOW
-            </strong>
+            <strong>GLOW</strong>
 
             <small>
                 AI STUDIO 2027
             </small>
-
         </div>
 
     </div>
@@ -69,6 +55,10 @@
             Video
         </a>
 
+        <a href="#image">
+            Image
+        </a>
+
         <a href="#creations">
             Creations
         </a>
@@ -79,12 +69,12 @@
     <button
         class="login-btn"
         type="button"
+        onclick="openAccount()"
     >
         Sign In
     </button>
 
 </header>
-
 
 
 <!-- =====================================================
@@ -95,7 +85,6 @@
     id="home"
     class="hero"
 >
-
 
     <div class="hero-content">
 
@@ -119,24 +108,21 @@
 
         <p>
 
-            Create music, videos, stories,
-            characters and unforgettable
-            experiences with GLOW AI STUDIO.
+            Create music, videos, images, stories,
+            characters and unforgettable experiences
+            with GLOW AI STUDIO.
 
         </p>
 
 
         <div class="hero-buttons">
 
-
             <button
                 type="button"
                 class="primary-btn"
                 onclick="openStudio('music')"
             >
-
                 🎵 Create Music
-
             </button>
 
 
@@ -145,16 +131,12 @@
                 class="secondary-btn"
                 onclick="openStudio('video')"
             >
-
                 🎬 Create Video
-
             </button>
-
 
         </div>
 
     </div>
-
 
 
     <!-- HERO ORB -->
@@ -171,20 +153,17 @@
 
     </div>
 
-
 </section>
 
 
-
 <!-- =====================================================
-     STUDIOS
+     AI STUDIOS
 ====================================================== -->
 
 <section
     id="music"
     class="studios"
 >
-
 
     <div class="section-title">
 
@@ -203,11 +182,12 @@
     </div>
 
 
-
     <div class="studio-grid">
 
 
-        <!-- MUSIC CARD -->
+        <!-- =================================================
+             MUSIC CARD
+        ================================================== -->
 
         <div class="studio-card music-card">
 
@@ -227,11 +207,8 @@
 
 
             <p>
-
-                Turn your ideas into
-                complete songs with AI
-                music generation.
-
+                Turn your ideas into complete songs
+                with AI music generation.
             </p>
 
 
@@ -265,16 +242,15 @@
                 class="card-btn"
                 onclick="openStudio('music')"
             >
-
                 🎵 Create Music
-
             </button>
 
         </div>
 
 
-
-        <!-- VIDEO CARD -->
+        <!-- =================================================
+             VIDEO CARD
+        ================================================== -->
 
         <div
             id="video"
@@ -297,10 +273,8 @@
 
 
             <p>
-
                 Transform stories and ideas
                 into cinematic AI videos.
-
             </p>
 
 
@@ -334,29 +308,366 @@
                 class="card-btn"
                 onclick="openStudio('video')"
             >
-
                 🎬 Create Video
-
             </button>
 
         </div>
 
+
+        <!-- =================================================
+             IMAGE CARD
+        ================================================== -->
+
+        <div
+            id="image"
+            class="studio-card image-card"
+        >
+
+            <div class="card-icon">
+                🖼️
+            </div>
+
+
+            <div class="card-label">
+                GLOW IMAGE
+            </div>
+
+
+            <h3>
+                AI Picture Studio
+            </h3>
+
+
+            <p>
+                Create, edit and transform pictures
+                with powerful AI.
+            </p>
+
+
+            <ul>
+
+                <li>
+                    ✓ AI image generation
+                </li>
+
+                <li>
+                    ✓ Photo editing
+                </li>
+
+                <li>
+                    ✓ Background removal
+                </li>
+
+                <li>
+                    ✓ Background replacement
+                </li>
+
+                <li>
+                    ✓ Image enhancement
+                </li>
+
+            </ul>
+
+
+            <button
+                type="button"
+                class="card-btn"
+                onclick="openStudio('image')"
+            >
+                🖼️ Create Image
+            </button>
+
+        </div>
 
     </div>
 
 </section>
 
 
+<!-- =====================================================
+     SUBSCRIPTION
+====================================================== -->
+
+<section
+    id="subscription"
+    class="studios"
+>
+
+    <div class="section-title">
+
+        <span>
+            GLOW MEMBERSHIP
+        </span>
+
+
+        <h2>
+            Create More. Create Bigger.
+        </h2>
+
+
+        <p>
+            Choose a weekly plan that gives you more
+            creative power.
+        </p>
+
+    </div>
+
+
+    <div class="studio-grid">
+
+
+        <!-- FREE -->
+
+        <div class="studio-card">
+
+            <div class="card-icon">
+                ✨
+            </div>
+
+
+            <div class="card-label">
+                GLOW FREE
+            </div>
+
+
+            <h3>
+                Free
+            </h3>
+
+
+            <p>
+                Start creating and explore GLOW AI STUDIO.
+            </p>
+
+
+            <ul>
+
+                <li>
+                    ✓ 10 AI credits
+                </li>
+
+                <li>
+                    ✓ Music studio
+                </li>
+
+                <li>
+                    ✓ Video studio
+                </li>
+
+                <li>
+                    ✓ Image studio
+                </li>
+
+                <li>
+                    ✓ Personal creations
+                </li>
+
+            </ul>
+
+
+            <button
+                type="button"
+                class="card-btn"
+                onclick="openSubscription('free')"
+            >
+                ✨ Start Free
+            </button>
+
+        </div>
+
+
+        <!-- CREATOR -->
+
+        <div class="studio-card">
+
+            <div class="card-icon">
+                🚀
+            </div>
+
+
+            <div class="card-label">
+                GLOW CREATOR
+            </div>
+
+
+            <h3>
+                Creator
+            </h3>
+
+
+            <p>
+                For creators who want more AI generation power.
+            </p>
+
+
+            <ul>
+
+                <li>
+                    ✓ 100 weekly credits
+                </li>
+
+                <li>
+                    ✓ Music generation
+                </li>
+
+                <li>
+                    ✓ Video generation
+                </li>
+
+                <li>
+                    ✓ AI image tools
+                </li>
+
+                <li>
+                    ✓ Creation library
+                </li>
+
+            </ul>
+
+
+            <button
+                type="button"
+                class="card-btn"
+                onclick="openSubscription('creator')"
+            >
+                🚀 Choose Creator
+            </button>
+
+        </div>
+
+
+        <!-- PRO -->
+
+        <div class="studio-card">
+
+            <div class="card-icon">
+                💎
+            </div>
+
+
+            <div class="card-label">
+                GLOW PRO
+            </div>
+
+
+            <h3>
+                Pro
+            </h3>
+
+
+            <p>
+                More credits and more creative possibilities.
+            </p>
+
+
+            <ul>
+
+                <li>
+                    ✓ 300 weekly credits
+                </li>
+
+                <li>
+                    ✓ Advanced AI creation
+                </li>
+
+                <li>
+                    ✓ Music & video
+                </li>
+
+                <li>
+                    ✓ AI picture editing
+                </li>
+
+                <li>
+                    ✓ Priority creation
+                </li>
+
+            </ul>
+
+
+            <button
+                type="button"
+                class="card-btn"
+                onclick="openSubscription('pro')"
+            >
+                💎 Choose Pro
+            </button>
+
+        </div>
+
+
+        <!-- STUDIO -->
+
+        <div class="studio-card">
+
+            <div class="card-icon">
+                👑
+            </div>
+
+
+            <div class="card-label">
+                GLOW STUDIO
+            </div>
+
+
+            <h3>
+                Studio
+            </h3>
+
+
+            <p>
+                Maximum creative power for serious creators.
+            </p>
+
+
+            <ul>
+
+                <li>
+                    ✓ 1000 weekly credits
+                </li>
+
+                <li>
+                    ✓ Full AI studio access
+                </li>
+
+                <li>
+                    ✓ Music & video
+                </li>
+
+                <li>
+                    ✓ AI picture studio
+                </li>
+
+                <li>
+                    ✓ Premium creation tools
+                </li>
+
+            </ul>
+
+
+            <button
+                type="button"
+                class="card-btn"
+                onclick="openSubscription('studio')"
+            >
+                👑 Choose Studio
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
 
 <!-- =====================================================
-     CREATIONS
+     YOUR CREATIONS
 ====================================================== -->
 
 <section
     id="creations"
     class="creations"
 >
-
 
     <div class="section-title">
 
@@ -371,15 +682,17 @@
 
 
         <p>
-            Your generated music and videos
+            Your generated music, videos and images
             will appear here.
         </p>
 
     </div>
 
 
-
-    <div class="empty-state">
+    <div
+        id="creationsContainer"
+        class="empty-state"
+    >
 
         <div class="empty-icon">
             ✨
@@ -392,19 +705,17 @@
 
 
         <p>
-            Generate your first song or video
+            Generate your first song, video or image
             and it will be ready for you here.
         </p>
 
     </div>
 
-
 </section>
 
 
-
 <!-- =====================================================
-     MUSIC / VIDEO MODAL
+     MAIN STUDIO MODAL
 ====================================================== -->
 
 <div
@@ -413,12 +724,10 @@
     onclick="closeStudioOutside(event)"
 >
 
-
     <div
         class="modal-box"
         onclick="event.stopPropagation()"
     >
-
 
         <button
             type="button"
@@ -426,58 +735,50 @@
             onclick="closeStudio()"
             aria-label="Close"
         >
-
             ×
-
         </button>
 
 
         <div id="modalContent">
-
         </div>
-
 
     </div>
 
 </div>
 
 
-
 <!-- =====================================================
-     FOOTER
+     ACCOUNT MODAL
 ====================================================== -->
 
-<footer>
+<div
+    id="accountModal"
+    class="modal"
+    onclick="closeAccountOutside(event)"
+>
 
-    <div class="footer-logo">
+    <div
+        class="modal-box"
+        onclick="event.stopPropagation()"
+    >
 
-        GLOW
+        <button
+            type="button"
+            class="close-btn"
+            onclick="closeAccount()"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div id="accountContent">
+        </div>
 
     </div>
 
-
-    <p>
-        Create Music. Create Video.
-        Create Your World.
-    </p>
-
-
-    <p>
-        © 2027 GLOW AI STUDIO.
-        All rights reserved.
-    </p>
-
-</footer>
-
+</div>
 
 
 <!-- =====================================================
-     JAVASCRIPT
-====================================================== -->
-
-<script src="app.js"></script>
-
-
-</body>
-
-            </html>
+     FOOT
