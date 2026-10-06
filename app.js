@@ -1,57 +1,80 @@
-/* =========================================================
+/* =====================================================
    GLOW AI STUDIO 2027
-   FULL APP.JS
-   MUSIC + VIDEO STUDIOS
-   ========================================================= */
+   MAIN APPLICATION
+===================================================== */
+
+let currentUser = null;
+let currentStudio = null;
 
 
-/* =========================================================
-   GLOBAL STUDIO FUNCTION
-   ========================================================= */
+/* =====================================================
+   BASIC HELPERS
+===================================================== */
+
+function escapeHTML(value) {
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+async function api(url, options = {}) {
+
+    const response = await fetch(url, {
+        credentials: "same-origin",
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+        }
+    });
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch (error) {
+        data = {};
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            data.message ||
+            "Something went wrong."
+        );
+    }
+
+    return data;
+}
+
+
+/* =====================================================
+   STUDIO MODAL
+===================================================== */
 
 function openStudio(type) {
 
-    console.log("GLOW: opening studio:", type);
+    currentStudio = type;
 
+    const modal = document.getElementById("studioModal");
+    const content = document.getElementById("modalContent");
 
-    const modal =
-        document.getElementById("studioModal");
-
-    const content =
-        document.getElementById("modalContent");
-
-
-    if (!modal) {
-
-        alert(
-            "GLOW ERROR: Studio popup was not found."
-        );
-
-        console.error(
-            "studioModal not found"
-        );
-
+    if (!modal || !content) {
         return;
     }
 
 
-    if (!content) {
-
-        alert(
-            "GLOW ERROR: Popup content was not found."
-        );
-
-        console.error(
-            "modalContent not found"
-        );
-
-        return;
-    }
-
-
-    /* =====================================================
-       MUSIC STUDIO
-    ===================================================== */
+    /* ================================================
+       MUSIC
+    ================================================= */
 
     if (type === "music") {
 
@@ -59,19 +82,16 @@ function openStudio(type) {
 
             <div class="studio-modal-header">
 
-                <span class="studio-modal-badge">
+                <div class="studio-modal-badge">
                     🎵 GLOW MUSIC
-                </span>
+                </div>
 
                 <h2>
-                    Create Your Music
+                    AI Music Studio
                 </h2>
 
                 <p>
-                    Turn your idea into an original
-                    AI-generated song with vocals,
-                    lyrics, instruments, rhythm
-                    and professional production.
+                    Turn your imagination into an original song.
                 </p>
 
             </div>
@@ -79,226 +99,180 @@ function openStudio(type) {
 
             <form
                 class="music-form"
-                id="musicForm"
+                onsubmit="generateMusic(event)"
             >
-
 
                 <div class="form-group">
 
-                    <label for="songPrompt">
+                    <label>
                         Describe your song
                     </label>
 
-                    <span class="form-hint">
-                        Tell GLOW what you want the
-                        song to sound and feel like.
-                    </span>
-
-
                     <textarea
-                        id="songPrompt"
-                        placeholder="Example: Create an energetic modern Afrobeat song about chasing dreams, overcoming struggles and becoming successful. Use powerful African drums, deep warm bass, catchy guitar, beautiful piano and inspiring vocals..."
+                        id="musicPrompt"
+                        rows="5"
+                        placeholder="Example: A powerful Nigerian Afrobeat song about success, love and never giving up..."
                         required
                     ></textarea>
 
-                </div>
+                    <div class="form-hint">
+                        Describe the story, feeling, instruments,
+                        vocals and sound you want.
+                    </div>
 
+                </div>
 
 
                 <div class="form-options">
 
+                    <div class="form-group">
 
-                    <div class="select-box">
-
-                        <label for="genre">
+                        <label>
                             Genre
                         </label>
 
-                        <select id="genre">
+                        <select
+                            id="musicGenre"
+                            class="select-box"
+                        >
 
-                            <option>
+                            <option value="Afrobeat">
                                 Afrobeat
                             </option>
 
-                            <option>
+                            <option value="Afropop">
                                 Afropop
                             </option>
 
-                            <option>
+                            <option value="Amapiano">
                                 Amapiano
                             </option>
 
-                            <option>
+                            <option value="Hip-Hop">
                                 Hip-Hop
                             </option>
 
-                            <option>
+                            <option value="R&B">
                                 R&B
                             </option>
 
-                            <option>
+                            <option value="Pop">
                                 Pop
                             </option>
 
-                            <option>
-                                Reggae
-                            </option>
-
-                            <option>
-                                Dancehall
-                            </option>
-
-                            <option>
+                            <option value="Gospel">
                                 Gospel
                             </option>
 
-                            <option>
-                                Rock
-                            </option>
-
-                            <option>
-                                Electronic
-                            </option>
-
                         </select>
 
                     </div>
 
 
+                    <div class="form-group">
 
-                    <div class="select-box">
-
-                        <label for="mood">
+                        <label>
                             Mood
                         </label>
 
-                        <select id="mood">
+                        <select
+                            id="musicMood"
+                            class="select-box"
+                        >
 
-                            <option>
+                            <option value="Energetic">
                                 Energetic
                             </option>
 
-                            <option>
+                            <option value="Happy">
                                 Happy
                             </option>
 
-                            <option>
+                            <option value="Romantic">
                                 Romantic
                             </option>
 
-                            <option>
+                            <option value="Emotional">
                                 Emotional
                             </option>
 
-                            <option>
-                                Motivational
-                            </option>
-
-                            <option>
-                                Sad
-                            </option>
-
-                            <option>
+                            <option value="Dark">
                                 Dark
                             </option>
 
-                            <option>
-                                Chill
-                            </option>
-
-                            <option>
-                                Epic
+                            <option value="Inspirational">
+                                Inspirational
                             </option>
 
                         </select>
 
                     </div>
-
-
-
-                    <div class="select-box">
-
-                        <label for="length">
-                            Song Length
-                        </label>
-
-                        <select id="length">
-
-                            <option value="30">
-                                30 seconds
-                            </option>
-
-                            <option
-                                value="60"
-                                selected
-                            >
-                                1 minute
-                            </option>
-
-                            <option value="120">
-                                2 minutes
-                            </option>
-
-                            <option value="180">
-                                3 minutes
-                            </option>
-
-                            <option value="240">
-                                4 minutes
-                            </option>
-
-                        </select>
-
-                    </div>
-
 
                 </div>
 
+
+                <div class="form-group">
+
+                    <label>
+                        Song Length
+                    </label>
+
+                    <select
+                        id="musicLength"
+                        class="select-box"
+                    >
+
+                        <option value="60000">
+                            1 minute
+                        </option>
+
+                        <option value="120000">
+                            2 minutes
+                        </option>
+
+                        <option value="180000" selected>
+                            3 minutes
+                        </option>
+
+                        <option value="240000">
+                            4 minutes
+                        </option>
+
+                        <option value="300000">
+                            5 minutes
+                        </option>
+
+                    </select>
+
+                </div>
 
 
                 <button
                     type="submit"
                     class="generate-btn"
-                    id="generateMusicBtn"
                 >
-                    🎵 Generate AI Song
+                    🎵 Generate Music
                 </button>
 
 
-
                 <div
+                    id="musicStatus"
                     class="generation-status"
-                    id="generationStatus"
                 ></div>
-
 
             </form>
 
         `;
 
+        modal.classList.add("active");
 
-        const musicForm =
-            document.getElementById(
-                "musicForm"
-            );
-
-
-        if (musicForm) {
-
-            musicForm.addEventListener(
-                "submit",
-                generateMusic
-            );
-
-        }
-
+        return;
     }
 
 
-
-    /* =====================================================
-       VIDEO STUDIO
-    ===================================================== */
+    /* ================================================
+       VIDEO
+    ================================================= */
 
     if (type === "video") {
 
@@ -306,17 +280,16 @@ function openStudio(type) {
 
             <div class="studio-modal-header">
 
-                <span class="studio-modal-badge">
+                <div class="studio-modal-badge">
                     🎬 GLOW VIDEO
-                </span>
+                </div>
 
                 <h2>
-                    Create Your Video
+                    AI Video Studio
                 </h2>
 
                 <p>
-                    Turn your story and imagination
-                    into cinematic AI video.
+                    Transform your story into cinematic visuals.
                 </p>
 
             </div>
@@ -324,62 +297,56 @@ function openStudio(type) {
 
             <form
                 class="music-form"
-                id="videoForm"
+                onsubmit="generateVideo(event)"
             >
-
 
                 <div class="form-group">
 
-                    <label for="videoPrompt">
+                    <label>
                         Describe your video
                     </label>
 
-                    <span class="form-hint">
-                        Describe the characters,
-                        location, action, story
-                        and visual style.
-                    </span>
-
-
                     <textarea
                         id="videoPrompt"
-                        placeholder="Example: A young Nigerian footballer starts playing on a small neighborhood pitch, trains every day, faces rejection and eventually becomes a world-famous football star. Cinematic stadium scenes, emotional journey, realistic human characters..."
+                        rows="6"
+                        placeholder="Example: A young Nigerian artist walking through Lagos at night, cinematic lighting, realistic characters, dramatic camera movement..."
                         required
                     ></textarea>
 
                 </div>
 
 
-
                 <div class="form-options">
 
+                    <div class="form-group">
 
-                    <div class="select-box">
-
-                        <label for="videoStyle">
+                        <label>
                             Visual Style
                         </label>
 
-                        <select id="videoStyle">
+                        <select
+                            id="videoStyle"
+                            class="select-box"
+                        >
 
-                            <option>
+                            <option value="Cinematic">
                                 Cinematic
                             </option>
 
-                            <option>
+                            <option value="Realistic">
                                 Realistic
                             </option>
 
-                            <option>
+                            <option value="Music Video">
                                 Music Video
                             </option>
 
-                            <option>
-                                Documentary
+                            <option value="Anime">
+                                Anime
                             </option>
 
-                            <option>
-                                Anime
+                            <option value="Fantasy">
+                                Fantasy
                             </option>
 
                         </select>
@@ -387,32 +354,34 @@ function openStudio(type) {
                     </div>
 
 
+                    <div class="form-group">
 
-                    <div class="select-box">
-
-                        <label for="videoMood">
+                        <label>
                             Mood
                         </label>
 
-                        <select id="videoMood">
+                        <select
+                            id="videoMood"
+                            class="select-box"
+                        >
 
-                            <option>
+                            <option value="Epic">
                                 Epic
                             </option>
 
-                            <option>
-                                Emotional
-                            </option>
-
-                            <option>
-                                Inspirational
-                            </option>
-
-                            <option>
+                            <option value="Happy">
                                 Happy
                             </option>
 
-                            <option>
+                            <option value="Dramatic">
+                                Dramatic
+                            </option>
+
+                            <option value="Emotional">
+                                Emotional
+                            </option>
+
+                            <option value="Dark">
                                 Dark
                             </option>
 
@@ -420,1053 +389,1713 @@ function openStudio(type) {
 
                     </div>
 
-
-
-                    <div class="select-box">
-
-                        <label for="videoLength">
-                            Duration
-                        </label>
-
-                        <select id="videoLength">
-
-                            <option>
-                                5 seconds
-                            </option>
-
-                            <option>
-                                10 seconds
-                            </option>
-
-                            <option>
-                                15 seconds
-                            </option>
-
-                            <option>
-                                30 seconds
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
                 </div>
 
+
+                <div class="form-group">
+
+                    <label>
+                        Duration
+                    </label>
+
+                    <select
+                        id="videoDuration"
+                        class="select-box"
+                    >
+
+                        <option value="5">
+                            5 seconds
+                        </option>
+
+                        <option value="10">
+                            10 seconds
+                        </option>
+
+                        <option value="15">
+                            15 seconds
+                        </option>
+
+                        <option value="30">
+                            30 seconds
+                        </option>
+
+                    </select>
+
+                </div>
 
 
                 <button
                     type="submit"
                     class="generate-btn"
-                    id="generateVideoBtn"
                 >
-                    🎬 Generate AI Video
+                    🎬 Generate Video
                 </button>
 
 
-
                 <div
+                    id="videoStatus"
                     class="generation-status"
-                    id="videoGenerationStatus"
                 ></div>
-
 
             </form>
 
         `;
 
+        modal.classList.add("active");
 
-        const videoForm =
-            document.getElementById(
-                "videoForm"
-            );
-
-
-        if (videoForm) {
-
-            videoForm.addEventListener(
-                "submit",
-                generateVideo
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       SHOW MODAL
-    ===================================================== */
-
-    modal.classList.add("active");
-
-    document.body.style.overflow = "hidden";
-
-
-    console.log(
-        "GLOW: studio opened successfully"
-    );
-
-}
-
-
-
-/* =========================================================
-   CLOSE STUDIO
-   ========================================================= */
-
-function closeStudio() {
-
-    const modal =
-        document.getElementById(
-            "studioModal"
-        );
-
-
-    if (!modal) {
         return;
     }
 
 
-    modal.classList.remove(
-        "active"
-    );
+    /* ================================================
+       IMAGE
+    ================================================= */
+
+    if (type === "image") {
+
+        content.innerHTML = `
+
+            <div class="studio-modal-header">
+
+                <div class="studio-modal-badge">
+                    🖼️ GLOW IMAGE
+                </div>
+
+                <h2>
+                    AI Picture Studio
+                </h2>
+
+                <p>
+                    Create or transform images with AI.
+                </p>
+
+            </div>
 
 
-    document.body.style.overflow = "";
+            <form
+                class="music-form"
+                onsubmit="generateImage(event)"
+            >
+
+                <div class="form-group">
+
+                    <label>
+                        Upload Picture
+                    </label>
+
+                    <input
+                        type="file"
+                        id="imageFile"
+                        accept="image/*"
+                    >
+
+                    <div class="form-hint">
+                        Upload a picture if you want GLOW
+                        to edit or transform it.
+                    </div>
+
+                </div>
 
 
+                <div class="form-group">
+
+                    <label>
+                        What should GLOW create?
+                    </label>
+
+                    <textarea
+                        id="imagePrompt"
+                        rows="5"
+                        placeholder="Example: Replace the background with a beautiful Lagos skyline at sunset..."
+                        required
+                    ></textarea>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Image Mode
+                    </label>
+
+                    <select
+                        id="imageMode"
+                        class="select-box"
+                    >
+
+                        <option value="create">
+                            Create New Image
+                        </option>
+
+                        <option value="edit">
+                            Edit Uploaded Picture
+                        </option>
+
+                        <option value="background">
+                            Replace Background
+                        </option>
+
+                        <option value="enhance">
+                            Enhance Picture
+                        </option>
+
+                        <option value="remove">
+                            Remove Object
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="generate-btn"
+                >
+                    🖼️ Generate Image
+                </button>
+
+
+                <div
+                    id="imageStatus"
+                    class="generation-status"
+                ></div>
+
+            </form>
+
+        `;
+
+        modal.classList.add("active");
+
+        return;
+    }
 }
 
 
+/* =====================================================
+   CLOSE STUDIO
+===================================================== */
 
-/* =========================================================
-   CLOSE OUTSIDE MODAL
-   ========================================================= */
+function closeStudio() {
+
+    const modal = document.getElementById("studioModal");
+
+    if (modal) {
+        modal.classList.remove("active");
+    }
+}
+
 
 function closeStudioOutside(event) {
 
-    const modal =
-        document.getElementById(
-            "studioModal"
-        );
-
-
     if (
-        modal &&
-        event.target === modal
+        event.target &&
+        event.target.id === "studioModal"
     ) {
-
         closeStudio();
-
     }
-
 }
 
 
-
-/* =========================================================
-   ESC KEY
-   ========================================================= */
-
-document.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (
-            event.key === "Escape"
-        ) {
-
-            closeStudio();
-
-        }
-
-    }
-);
-
-
-
-/* =========================================================
+/* =====================================================
    MUSIC GENERATION
-   ========================================================= */
+===================================================== */
 
 async function generateMusic(event) {
 
     event.preventDefault();
 
-
-    const promptElement =
-        document.getElementById(
-            "songPrompt"
-        );
-
-
-    const genreElement =
-        document.getElementById(
-            "genre"
-        );
-
-
-    const moodElement =
-        document.getElementById(
-            "mood"
-        );
-
-
-    const lengthElement =
-        document.getElementById(
-            "length"
-        );
-
-
-    const button =
-        document.getElementById(
-            "generateMusicBtn"
-        );
-
-
     const status =
-        document.getElementById(
-            "generationStatus"
-        );
-
-
-    if (
-        !promptElement ||
-        !button ||
-        !status
-    ) {
-
-        console.error(
-            "GLOW: Music form elements missing."
-        );
-
-        return;
-
-    }
-
+        document.getElementById("musicStatus");
 
     const prompt =
-        promptElement.value.trim();
-
+        document.getElementById("musicPrompt").value.trim();
 
     const genre =
-        genreElement
-            ? genreElement.value
-            : "Afrobeat";
-
+        document.getElementById("musicGenre").value;
 
     const mood =
-        moodElement
-            ? moodElement.value
-            : "Energetic";
-
+        document.getElementById("musicMood").value;
 
     const length =
-        lengthElement
-            ? Number(
-                lengthElement.value
-            )
-            : 30;
+        Number(
+            document.getElementById("musicLength").value
+        );
 
 
     if (!prompt) {
-
-        alert(
-            "Please describe the song you want to create."
-        );
-
+        status.textContent =
+            "Please describe the song you want.";
         return;
-
     }
 
 
-    /* =====================================================
-       LOADING
-    ===================================================== */
-
-    button.disabled = true;
-
-    button.textContent =
-        "🎵 Sending to GLOW AI...";
-
-
-    status.classList.add(
-        "active"
-    );
-
-
     status.innerHTML = `
-
         <div class="loading-ring"></div>
-
-        <strong>
-            GLOW AI is creating your song...
-        </strong>
-
-        <p
-            style="
-                margin-top:10px;
-                color:#888895;
-                font-size:13px;
-                line-height:1.6;
-            "
-        >
-            Sending your idea to the
-            GLOW AI music engine...
+        <p>
+            GLOW is creating your music...
         </p>
-
     `;
-
-
-    /* =====================================================
-       FINAL AI PROMPT
-    ===================================================== */
-
-    const finalPrompt = `
-
-Create a complete professional
-${genre} song.
-
-Genre:
-${genre}
-
-Mood:
-${mood}
-
-Song idea:
-${prompt}
-
-Create an original song with:
-
-- professional drums
-- bass
-- melody
-- rhythm
-- instruments
-- arrangement
-- vocals
-- original lyrics
-- catchy chorus
-- professional production
-
-Make the song emotional,
-engaging and memorable.
-
-Make it sound like a professionally
-produced commercial music release.
-
-Do not copy any existing song,
-artist recording or copyrighted lyrics.
-
-`;
 
 
     try {
 
-
-        /* =================================================
-           SEND TO OUR RENDER BACKEND
-        ================================================= */
-
-        const response =
-            await fetch(
-                "/api/music",
-                {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-
-                            prompt:
-                                finalPrompt,
-
-                            music_length_ms:
-                                length * 1000
-
-                        })
-
-                }
-            );
+        const finalPrompt =
+            `${genre}, ${mood}. ${prompt}`;
 
 
-        let data;
+        const result = await api(
+            "/api/music",
+            {
+                method: "POST",
+
+                body: JSON.stringify({
+                    prompt: finalPrompt,
+                    music_length_ms: length
+                })
+            }
+        );
+
+
+        if (!result.request_id) {
+
+            status.innerHTML = `
+                <p>
+                    Music request was received.
+                </p>
+            `;
+
+            return;
+        }
+
+
+        status.innerHTML = `
+            <div class="loading-ring"></div>
+            <p>
+                Music generation started...
+            </p>
+        `;
+
+
+        pollMusicStatus(
+            result.request_id,
+            status
+        );
+
+    } catch (error) {
+
+        status.innerHTML = `
+            <p>
+                ❌ ${escapeHTML(error.message)}
+            </p>
+        `;
+
+    }
+}
+
+
+/* =====================================================
+   MUSIC STATUS
+===================================================== */
+
+async function pollMusicStatus(
+    requestId,
+    statusElement
+) {
+
+    let attempts = 0;
+
+    const maxAttempts = 120;
+
+
+    const check = async () => {
+
+        attempts++;
+
+
+        if (attempts > maxAttempts) {
+
+            statusElement.innerHTML = `
+                <p>
+                    Generation is taking longer than expected.
+                    Please check your creations later.
+                </p>
+            `;
+
+            return;
+        }
 
 
         try {
 
-            data =
-                await response.json();
-
-        } catch(error) {
-
-            throw new Error(
-                "The GLOW server returned an invalid response."
+            const result = await api(
+                `/api/music/status/${encodeURIComponent(requestId)}`,
+                {
+                    method: "GET",
+                    headers: {}
+                }
             );
 
-        }
 
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            let message =
-                data.error ||
-                "Music generation request failed.";
+            const status =
+                String(
+                    result.status || ""
+                ).toLowerCase();
 
 
             if (
-                data.details &&
-                typeof data.details === "object"
+                status === "completed" ||
+                status === "complete" ||
+                status === "succeeded" ||
+                status === "success"
             ) {
 
-                const detailText =
-                    data.details.message ||
-                    data.details.error;
+                const audioUrl =
+                    result.audio_url ||
+                    result.media_url ||
+                    result.url;
 
 
-                if (detailText) {
+                if (audioUrl) {
 
-                    message +=
-                        " " +
-                        detailText;
+                    statusElement.innerHTML = `
 
+                        <p>
+                            ✅ Your song is ready!
+                        </p>
+
+                        <audio
+                            controls
+                            style="width:100%;"
+                            src="${escapeHTML(audioUrl)}"
+                        ></audio>
+
+                        <br>
+
+                        <a
+                            href="${escapeHTML(audioUrl)}"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            🎧 Open / Download Song
+                        </a>
+
+                    `;
+
+                } else {
+
+                    statusElement.innerHTML = `
+                        <p>
+                            ✅ Music generation completed.
+                        </p>
+                    `;
                 }
 
+
+                loadCreations();
+
+                return;
             }
 
 
-            throw new Error(
-                message
-            );
-
-        }
-
-
-        const requestId =
-            data.request_id;
-
-
-        if (!requestId) {
-
-            throw new Error(
-                "GLOW received no music request ID."
-            );
-
-        }
-
-
-        console.log(
-            "GLOW music request:",
-            requestId
-        );
-
-
-        /* =================================================
-           START POLLING
-        ================================================= */
-
-        status.innerHTML = `
-
-            <div class="loading-ring"></div>
-
-            <strong>
-                🎵 Creating your song...
-            </strong>
-
-            <p
-                id="musicProgress"
-                style="
-                    margin-top:10px;
-                    color:#888895;
-                    font-size:12px;
-                "
-            >
-                Request accepted.
-                Waiting for AI music generation...
-            </p>
-
-        `;
-
-
-        await waitForMusic(
-            requestId,
-            status,
-            genre,
-            mood,
-            length
-        );
-
-
-    } catch(error) {
-
-
-        console.error(
-            "GLOW MUSIC ERROR:",
-            error
-        );
-
-
-        status.innerHTML = `
-
-            <div
-                style="
-                    font-size:32px;
-                    margin-bottom:10px;
-                "
-            >
-                ❌
-            </div>
-
-
-            <strong>
-                Music generation failed
-            </strong>
-
-
-            <p
-                style="
-                    margin-top:10px;
-                    color:#ff8b8b;
-                    font-size:13px;
-                    line-height:1.7;
-                "
-            >
-                ${escapeHTML(
-                    error.message
-                )}
-            </p>
-
-
-            <button
-                type="button"
-                class="card-btn"
-                onclick="openStudio('music')"
-            >
-                🔄 Try Again
-            </button>
-
-        `;
-
-
-    } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-            "🎵 Generate AI Song";
-
-    }
-
-}
-
-
-
-/* =========================================================
-   POLL MUSIC STATUS
-   ========================================================= */
-
-async function waitForMusic(
-    requestId,
-    status,
-    genre,
-    mood,
-    length
-) {
-
-
-    const maximumAttempts =
-        120;
-
-
-    for (
-        let attempt = 1;
-        attempt <= maximumAttempts;
-        attempt++
-    ) {
-
-
-        const response =
-            await fetch(
-                "/api/music/status/" +
-                encodeURIComponent(
-                    requestId
-                )
-            );
-
-
-        let data;
-
-
-        try {
-
-            data =
-                await response.json();
-
-        } catch(error) {
-
-            throw new Error(
-                "The music status response was invalid."
-            );
-
-        }
-
-
-        console.log(
-            "GLOW music status:",
-            data
-        );
-
-
-        if (
-            !response.ok ||
-            data.success === false
-        ) {
-
-            throw new Error(
-                data.error ||
-                "Unable to check music generation status."
-            );
-
-        }
-
-
-        const currentStatus =
-            String(
-                data.status ||
-                "PROCESSING"
-            ).toUpperCase();
-
-
-        const progress =
-            document.getElementById(
-                "musicProgress"
-            );
-
-
-        if (progress) {
-
-            progress.textContent =
-                "Status: " +
-                currentStatus +
-                " • Check " +
-                attempt +
-                "/" +
-                maximumAttempts;
-
-        }
-
-
-        /* ================================================
-           COMPLETED
-        ================================================= */
-
-        if (
-            currentStatus ===
-            "COMPLETED"
-        ) {
-
-
-            if (!data.audio) {
-
-                throw new Error(
-                    "The song finished generating, but no audio URL was returned."
-                );
-
+            if (
+                status === "failed" ||
+                status === "error" ||
+                status === "cancelled"
+            ) {
+
+                statusElement.innerHTML = `
+                    <p>
+                        ❌ Music generation failed.
+                    </p>
+                `;
+
+                return;
             }
 
 
-            status.innerHTML = `
-
-                <div
-                    style="
-                        font-size:38px;
-                        margin-bottom:10px;
-                    "
-                >
-                    🎉
-                </div>
-
-
-                <strong
-                    style="
-                        font-size:18px;
-                    "
-                >
-                    Your song is ready!
-                </strong>
-
-
-                <p
-                    style="
-                        margin-top:10px;
-                        color:#888895;
-                        font-size:13px;
-                    "
-                >
-                    ${escapeHTML(genre)}
-                    •
-                    ${escapeHTML(mood)}
-                    •
-                    ${length} seconds
+            statusElement.innerHTML = `
+                <div class="loading-ring"></div>
+                <p>
+                    GLOW is still creating your song...
                 </p>
-
-
-                <audio
-                    controls
-                    preload="metadata"
-                    style="
-                        width:100%;
-                        margin-top:20px;
-                    "
-                    src="${escapeHTML(
-                        data.audio
-                    )}"
-                ></audio>
-
-
-                <a
-                    href="${escapeHTML(
-                        data.audio
-                    )}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download="GLOW-AI-Song.mp3"
-                    style="
-                        display:block;
-                        margin-top:16px;
-                        padding:14px;
-                        border-radius:13px;
-                        text-align:center;
-                        text-decoration:none;
-                        color:white;
-                        background:
-                            linear-gradient(
-                                135deg,
-                                #7c3aed,
-                                #ec4899
-                            );
-                        font-weight:bold;
-                    "
-                >
-                    ⬇️ Download Song
-                </a>
-
             `;
 
 
-            return;
-
-        }
-
-
-        /* ================================================
-           FAILED
-        ================================================= */
-
-        if (
-            currentStatus === "FAILED" ||
-            currentStatus === "ERROR"
-        ) {
-
-
-            throw new Error(
-                data.error ||
-                "Pixazo could not generate the song."
+            setTimeout(
+                check,
+                5000
             );
 
+        } catch (error) {
+
+            statusElement.innerHTML = `
+                <p>
+                    Checking generation status...
+                </p>
+            `;
+
+            setTimeout(
+                check,
+                5000
+            );
         }
+    };
 
 
-        /* ================================================
-           WAIT 5 SECONDS
-        ================================================= */
-
-        await sleep(5000);
-
-    }
-
-
-    throw new Error(
-        "Music generation is taking too long. Please try again."
-    );
-
+    check();
 }
 
 
-
-/* =========================================================
+/* =====================================================
    VIDEO GENERATION
-   ========================================================= */
+===================================================== */
 
 async function generateVideo(event) {
 
     event.preventDefault();
 
-
-    const promptElement =
-        document.getElementById(
-            "videoPrompt"
-        );
-
-
-    const styleElement =
-        document.getElementById(
-            "videoStyle"
-        );
-
-
-    const moodElement =
-        document.getElementById(
-            "videoMood"
-        );
-
-
-    const lengthElement =
-        document.getElementById(
-            "videoLength"
-        );
-
-
-    const button =
-        document.getElementById(
-            "generateVideoBtn"
-        );
-
-
     const status =
-        document.getElementById(
-            "videoGenerationStatus"
-        );
-
-
-    if (
-        !promptElement ||
-        !button ||
-        !status
-    ) {
-
-        return;
-
-    }
-
+        document.getElementById("videoStatus");
 
     const prompt =
-        promptElement.value.trim();
-
+        document.getElementById("videoPrompt").value.trim();
 
     const style =
-        styleElement
-            ? styleElement.value
-            : "Cinematic";
-
+        document.getElementById("videoStyle").value;
 
     const mood =
-        moodElement
-            ? moodElement.value
-            : "Epic";
-
+        document.getElementById("videoMood").value;
 
     const duration =
-        lengthElement
-            ? lengthElement.value
-            : "5 seconds";
+        document.getElementById("videoDuration").value;
 
 
     if (!prompt) {
 
-        alert(
-            "Please describe the video you want to create."
-        );
+        status.textContent =
+            "Please describe your video.";
 
         return;
-
     }
 
 
-    button.disabled = true;
-
-    button.textContent =
-        "🎬 Preparing Video...";
-
-
-    status.classList.add(
-        "active"
-    );
-
+    /*
+       The backend video engine is not connected yet.
+       We keep the interface ready so we can connect
+       the actual AI video provider in the next stage.
+    */
 
     status.innerHTML = `
 
-        <div class="loading-ring"></div>
-
-        <strong>
-            GLOW Video Studio
-        </strong>
-
-        <p
-            style="
-                margin-top:10px;
-                color:#888895;
-                font-size:13px;
-                line-height:1.7;
-            "
-        >
-            Your video request has been prepared.
+        <p>
+            🎬 Your video request is ready.
         </p>
+
+        <p>
+            Video engine connection will be added
+            to the GLOW backend next.
+        </p>
+
+        <small>
+            ${escapeHTML(style)}
+            ·
+            ${escapeHTML(mood)}
+            ·
+            ${escapeHTML(duration)} seconds
+        </small>
+
+    `;
+}
+
+
+/* =====================================================
+   IMAGE GENERATION
+===================================================== */
+
+async function generateImage(event) {
+
+    event.preventDefault();
+
+    const status =
+        document.getElementById("imageStatus");
+
+    const prompt =
+        document.getElementById("imagePrompt").value.trim();
+
+    const mode =
+        document.getElementById("imageMode").value;
+
+    const fileInput =
+        document.getElementById("imageFile");
+
+
+    if (!prompt) {
+
+        status.textContent =
+            "Please describe what you want GLOW to create.";
+
+        return;
+    }
+
+
+    /*
+       Image UI is ready.
+       The actual image AI provider will be connected
+       through app.py rather than exposing an API key
+       in the browser.
+    */
+
+    status.innerHTML = `
+
+        <p>
+            🖼️ Image request prepared.
+        </p>
+
+        <p>
+            Image AI engine connection will be added
+            to the GLOW backend next.
+        </p>
+
+        <small>
+            Mode: ${escapeHTML(mode)}
+        </small>
 
     `;
 
 
-    /*
-       Video API connection will be added
-       after the music engine is confirmed
-       working.
-    */
+    if (
+        fileInput &&
+        fileInput.files &&
+        fileInput.files.length > 0
+    ) {
+
+        status.innerHTML += `
+            <p>
+                📷 Picture selected:
+                ${escapeHTML(fileInput.files[0].name)}
+            </p>
+        `;
+    }
+}
 
 
-    setTimeout(
-        function() {
+/* =====================================================
+   ACCOUNT SYSTEM
+===================================================== */
 
-            status.innerHTML = `
+function openAccount(mode = "login") {
 
-                <div
-                    style="
-                        font-size:35px;
-                        margin-bottom:10px;
-                    "
-                >
-                    🎬
+    const modal =
+        document.getElementById("accountModal");
+
+    const content =
+        document.getElementById("accountContent");
+
+
+    if (!modal || !content) {
+        return;
+    }
+
+
+    if (mode === "signup") {
+
+        content.innerHTML = `
+
+            <div class="studio-modal-header">
+
+                <div class="studio-modal-badge">
+                    ✨ GLOW ACCOUNT
+                </div>
+
+                <h2>
+                    Create Your Account
+                </h2>
+
+                <p>
+                    Join GLOW AI STUDIO 2027.
+                </p>
+
+            </div>
+
+
+            <form
+                class="music-form"
+                onsubmit="signup(event)"
+            >
+
+                <div class="form-group">
+
+                    <label>
+                        Username
+                    </label>
+
+                    <input
+                        id="signupUsername"
+                        type="text"
+                        placeholder="Choose a username"
+                        required
+                    >
+
                 </div>
 
 
-                <strong>
-                    Video Studio Ready
-                </strong>
+                <div class="form-group">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input
+                        id="signupEmail"
+                        type="email"
+                        placeholder="Your email address"
+                        required
+                    >
+
+                </div>
 
 
-                <p
-                    style="
-                        margin-top:10px;
-                        color:#888895;
-                        font-size:13px;
-                        line-height:1.7;
-                    "
+                <div class="form-group">
+
+                    <label>
+                        Password
+                    </label>
+
+                    <input
+                        id="signupPassword"
+                        type="password"
+                        placeholder="Create a password"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="generate-btn"
                 >
-                    ${escapeHTML(style)}
-                    •
-                    ${escapeHTML(mood)}
-                    •
-                    ${escapeHTML(duration)}
+                    ✨ Create Account
+                </button>
+
+
+                <div
+                    id="accountStatus"
+                    class="generation-status"
+                ></div>
+
+
+                <p>
+                    Already have an account?
+                    <button
+                        type="button"
+                        onclick="openAccount('login')"
+                    >
+                        Sign In
+                    </button>
                 </p>
 
+            </form>
 
-                <p
-                    style="
-                        margin-top:10px;
-                        color:#888895;
-                        font-size:13px;
-                        line-height:1.7;
-                    "
+        `;
+
+        modal.classList.add("active");
+
+        return;
+    }
+
+
+    content.innerHTML = `
+
+        <div class="studio-modal-header">
+
+            <div class="studio-modal-badge">
+                🔐 GLOW ACCOUNT
+            </div>
+
+            <h2>
+                Welcome Back
+            </h2>
+
+            <p>
+                Sign in to your GLOW account.
+            </p>
+
+        </div>
+
+
+        <form
+            class="music-form"
+            onsubmit="login(event)"
+        >
+
+            <div class="form-group">
+
+                <label>
+                    Username
+                </label>
+
+                <input
+                    id="loginUsername"
+                    type="text"
+                    placeholder="Your username"
+                    required
                 >
-                    Your video engine will be
-                    connected to the AI video API next.
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Password
+                </label>
+
+                <input
+                    id="loginPassword"
+                    type="password"
+                    placeholder="Your password"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="generate-btn"
+            >
+                🔐 Sign In
+            </button>
+
+
+            <div
+                id="accountStatus"
+                class="generation-status"
+            ></div>
+
+
+            <p>
+                Don't have an account?
+                <button
+                    type="button"
+                    onclick="openAccount('signup')"
+                >
+                    Create Account
+                </button>
+            </p>
+
+        </form>
+
+    `;
+
+
+    modal.classList.add("active");
+}
+
+
+/* =====================================================
+   CLOSE ACCOUNT
+===================================================== */
+
+function closeAccount() {
+
+    const modal =
+        document.getElementById("accountModal");
+
+    if (modal) {
+        modal.classList.remove("active");
+    }
+}
+
+
+function closeAccountOutside(event) {
+
+    if (
+        event.target &&
+        event.target.id === "accountModal"
+    ) {
+        closeAccount();
+    }
+}
+
+
+/* =====================================================
+   SIGN UP
+===================================================== */
+
+async function signup(event) {
+
+    event.preventDefault();
+
+
+    const status =
+        document.getElementById("accountStatus");
+
+
+    const username =
+        document
+            .getElementById("signupUsername")
+            .value
+            .trim();
+
+
+    const email =
+        document
+            .getElementById("signupEmail")
+            .value
+            .trim();
+
+
+    const password =
+        document
+            .getElementById("signupPassword")
+            .value;
+
+
+    status.innerHTML = `
+        <div class="loading-ring"></div>
+        <p>
+            Creating your GLOW account...
+        </p>
+    `;
+
+
+    try {
+
+        const result =
+            await api(
+                "/api/auth/signup",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password
+                    })
+                }
+            );
+
+
+        currentUser =
+            result.user || null;
+
+
+        status.innerHTML = `
+            <p>
+                ✅ Account created successfully!
+            </p>
+        `;
+
+
+        setTimeout(
+            () => {
+                closeAccount();
+                updateAccountButton();
+                loadCreations();
+            },
+            1000
+        );
+
+
+    } catch (error) {
+
+        status.innerHTML = `
+            <p>
+                ❌ ${escapeHTML(error.message)}
+            </p>
+        `;
+
+    }
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+async function login(event) {
+
+    event.preventDefault();
+
+
+    const status =
+        document.getElementById("accountStatus");
+
+
+    const username =
+        document
+            .getElementById("loginUsername")
+            .value
+            .trim();
+
+
+    const password =
+        document
+            .getElementById("loginPassword")
+            .value;
+
+
+    status.innerHTML = `
+        <div class="loading-ring"></div>
+        <p>
+            Signing you in...
+        </p>
+    `;
+
+
+    try {
+
+        const result =
+            await api(
+                "/api/auth/login",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                }
+            );
+
+
+        currentUser =
+            result.user || null;
+
+
+        status.innerHTML = `
+            <p>
+                ✅ Welcome to GLOW!
+            </p>
+        `;
+
+
+        setTimeout(
+            () => {
+                closeAccount();
+                updateAccountButton();
+                loadCreations();
+            },
+            800
+        );
+
+
+    } catch (error) {
+
+        status.innerHTML = `
+            <p>
+                ❌ ${escapeHTML(error.message)}
+            </p>
+        `;
+
+    }
+}
+
+
+/* =====================================================
+   LOAD CURRENT USER
+===================================================== */
+
+async function loadCurrentUser() {
+
+    try {
+
+        const result =
+            await api(
+                "/api/auth/me",
+                {
+                    method: "GET",
+                    headers: {}
+                }
+            );
+
+
+        currentUser =
+            result.user || null;
+
+
+    } catch (error) {
+
+        currentUser = null;
+
+    }
+
+
+    updateAccountButton();
+}
+
+
+/* =====================================================
+   ACCOUNT BUTTON
+===================================================== */
+
+function updateAccountButton() {
+
+    const button =
+        document.querySelector(".login-btn");
+
+
+    if (!button) {
+        return;
+    }
+
+
+    if (currentUser) {
+
+        button.textContent =
+            "👤 " +
+            (
+                currentUser.username ||
+                "Account"
+            );
+
+        button.onclick =
+            () => openProfile();
+
+    } else {
+
+        button.textContent =
+            "Sign In";
+
+        button.onclick =
+            () => openAccount("login");
+
+    }
+}
+
+
+/* =====================================================
+   PROFILE
+===================================================== */
+
+async function openProfile() {
+
+    const modal =
+        document.getElementById("accountModal");
+
+    const content =
+        document.getElementById("accountContent");
+
+
+    if (!modal || !content) {
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await api(
+                "/api/profile",
+                {
+                    method: "GET",
+                    headers: {}
+                }
+            );
+
+
+        const user =
+            result.user ||
+            currentUser ||
+            {};
+
+
+        content.innerHTML = `
+
+            <div class="studio-modal-header">
+
+                <div class="studio-modal-badge">
+                    👤 GLOW PROFILE
+                </div>
+
+                <h2>
+                    ${escapeHTML(
+                        user.profile_name ||
+                        user.username ||
+                        "GLOW Creator"
+                    )}
+                </h2>
+
+                <p>
+                    @${escapeHTML(
+                        user.username || ""
+                    )}
+                </p>
+
+            </div>
+
+
+            <div class="music-form">
+
+                <div class="form-group">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        value="${escapeHTML(
+                            user.email || ""
+                        )}"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Plan
+                    </label>
+
+                    <input
+                        value="${escapeHTML(
+                            user.plan || "free"
+                        ).toUpperCase()}"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        AI Credits
+                    </label>
+
+                    <input
+                        value="${escapeHTML(
+                            user.credits ?? 0
+                        )}"
+                        disabled
+                    >
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="generate-btn"
+                    onclick="openSubscription()"
+                >
+                    💳 Manage Subscription
+                </button>
+
+
+                <button
+                    type="button"
+                    class="generate-btn"
+                    onclick="logout()"
+                >
+                    🚪 Logout
+                </button>
+
+            </div>
+
+        `;
+
+
+        modal.classList.add("active");
+
+    } catch (error) {
+
+        openAccount("login");
+
+    }
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logout() {
+
+    try {
+
+        await api(
+            "/api/auth/logout",
+            {
+                method: "POST",
+                body: JSON.stringify({})
+            }
+        );
+
+    } catch (error) {
+        /* Continue clearing local state. */
+    }
+
+
+    currentUser = null;
+
+    closeAccount();
+
+    updateAccountButton();
+
+    loadCreations();
+}
+
+
+/* =====================================================
+   SUBSCRIPTIONS
+===================================================== */
+
+async function openSubscription(selectedPlan = "") {
+
+    const modal =
+        document.getElementById("accountModal");
+
+    const content =
+        document.getElementById("accountContent");
+
+
+    if (!modal || !content) {
+        return;
+    }
+
+
+    let plans = [];
+
+
+    try {
+
+        const result =
+            await api(
+                "/api/plans",
+                {
+                    method: "GET",
+                    headers: {}
+                }
+            );
+
+
+        plans =
+            result.plans || [];
+
+    } catch (error) {
+
+        plans = [
+            {
+                id: "free",
+                name: "Free",
+                credits: 10
+            },
+            {
+                id: "creator",
+                name: "Creator",
+                credits: 100
+            },
+            {
+                id: "pro",
+                name: "Pro",
+                credits: 300
+            },
+            {
+                id: "studio",
+                name: "Studio",
+                credits: 1000
+            }
+        ];
+
+    }
+
+
+    let cards = "";
+
+
+    plans.forEach(
+        plan => {
+
+            const selected =
+                String(plan.id).toLowerCase() ===
+                String(selectedPlan).toLowerCase();
+
+
+            cards += `
+
+                <div class="studio-card">
+
+                    <div class="card-icon">
+                        ${
+                            plan.id === "studio"
+                                ? "👑"
+                                : plan.id === "pro"
+                                    ? "💎"
+                                    : plan.id === "creator"
+                                        ? "🚀"
+                                        : "✨"
+                        }
+                    </div>
+
+
+                    <div class="card-label">
+                        GLOW ${escapeHTML(
+                            plan.name || plan.id
+                        )}
+                    </div>
+
+
+                    <h3>
+                        ${escapeHTML(
+                            plan.name || plan.id
+                        )}
+                    </h3>
+
+
+                    <p>
+                        ${
+                            plan.credits !== undefined
+                                ? escapeHTML(
+                                    String(plan.credits)
+                                ) +
+                                  " AI credits"
+                                : "AI creation access"
+                        }
+                    </p>
+
+
+                    <button
+                        type="button"
+                        class="card-btn"
+                        onclick="selectPlan('${escapeHTML(
+                            plan.id
+                        )}')"
+                    >
+                        ${
+                            selected
+                                ? "✓ Selected"
+                                : "Choose Plan"
+                        }
+                    </button>
+
+                </div>
+
+            `;
+        }
+    );
+
+
+    content.innerHTML = `
+
+        <div class="studio-modal-header">
+
+            <div class="studio-modal-badge">
+                💳 GLOW MEMBERSHIP
+            </div>
+
+            <h2>
+                Choose Your Plan
+            </h2>
+
+            <p>
+                Weekly creative power for your GLOW account.
+            </p>
+
+        </div>
+
+
+        <div class="studio-grid">
+
+            ${cards}
+
+        </div>
+
+
+        <div
+            id="subscriptionStatus"
+            class="generation-status"
+        ></div>
+
+    `;
+
+
+    modal.classList.add("active");
+}
+
+
+/* =====================================================
+   SELECT PLAN
+===================================================== */
+
+async function selectPlan(planId) {
+
+    const status =
+        document.getElementById(
+            "subscriptionStatus"
+        );
+
+
+    if (!currentUser) {
+
+        if (status) {
+
+            status.innerHTML = `
+                <p>
+                    🔐 Please sign in before choosing
+                    a subscription.
+                </p>
+            `;
+        }
+
+        setTimeout(
+            () => openAccount("login"),
+            1000
+        );
+
+        return;
+    }
+
+
+    /*
+       Payment processing is not connected yet.
+       We do NOT pretend a payment happened.
+
+       The backend already contains subscription
+       database structures. The real payment gateway
+       will be connected in a later step.
+    */
+
+    if (status) {
+
+        status.innerHTML = `
+
+            <p>
+                💳 ${escapeHTML(
+                    planId
+                ).toUpperCase()} selected.
+            </p>
+
+            <p>
+                Payment activation will be connected
+                next.
+            </p>
+
+        `;
+    }
+}
+
+
+/* =====================================================
+   CREATIONS
+===================================================== */
+
+async function loadCreations() {
+
+    const container =
+        document.getElementById(
+            "creationsContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!currentUser) {
+
+        container.innerHTML = `
+
+            <div class="empty-icon">
+                🔐
+            </div>
+
+            <h3>
+                Sign in to view your creations
+            </h3>
+
+            <p>
+                Your music, videos and images
+                will be saved to your GLOW account.
+            </p>
+
+            <button
+                type="button"
+                class="card-btn"
+                onclick="openAccount('login')"
+            >
+                🔐 Sign In
+            </button>
+
+        `;
+
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await api(
+                "/api/creations",
+                {
+                    method: "GET",
+                    headers: {}
+                }
+            );
+
+
+        const creations =
+            result.creations || [];
+
+
+        if (!creations.length) {
+
+            container.innerHTML = `
+
+                <div class="empty-icon">
+                    ✨
+                </div>
+
+                <h3>
+                    Your creations will appear here
+                </h3>
+
+                <p>
+                    Generate your first song, video
+                    or image and it will be ready here.
                 </p>
 
             `;
 
-
-            button.disabled = false;
-
-            button.textContent =
-                "🎬 Generate AI Video";
-
-
-        },
-        1000
-    );
-
-}
-
-
-
-/* =========================================================
-   SLEEP
-   ========================================================= */
-
-function sleep(milliseconds) {
-
-    return new Promise(
-        function(resolve) {
-
-            setTimeout(
-                resolve,
-                milliseconds
-            );
-
+            return;
         }
-    );
-
-}
 
 
+        container.innerHTML = `
 
-/* =========================================================
-   ESCAPE HTML
-   ========================================================= */
+            <div>
 
-function escapeHTML(value) {
+                <h3>
+                    Your Creations
+                </h3>
 
-    return String(value)
+                <p>
+                    ${creations.length}
+                    creation(s)
+                </p>
 
-        .replace(
-            /&/g,
-            "&amp;"
-        )
+            </div>
 
-        .replace(
-            /</g,
-            "&lt;"
-        )
+        `;
 
-        .replace(
-            />/g,
-            "&gt;"
-        )
 
-        .replace(
-            /"/g,
-            "&quot;"
-        )
+        creations.forEach(
+            creation => {
 
-        .replace(
-            /'/g,
-            "&#039;"
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "studio-card";
+
+
+                item.innerHTML = `
+
+                    <div class="card-icon">
+                        ${
+                            creation.creation_type === "music"
+                                ? "🎵"
+                                : creation.creation_type === "video"
+                                    ? "🎬"
+                                    : "🖼️"
+                        }
+                    </div>
+
+
+                    <div class="card-label">
+                        GLOW ${escapeHTML(
+                            creation.creation_type ||
+                            "CREATION"
+                        ).toUpperCase()}
+                    </div>
+
+
+                    <h3>
+                        ${escapeHTML(
+                            creation.status ||
+                            "Creation"
+                        )}
+                    </h3>
+
+
+                    <p>
+                        ${escapeHTML(
+                            creation.prompt ||
+                            ""
+                        )}
+                    </p>
+
+                `;
+
+
+                container.appendChild(item);
+            }
         );
 
+    } catch (error) {
+
+        container.innerHTML = `
+
+            <div class="empty-icon">
+                ✨
+            </div>
+
+            <h3>
+                Your Creative World
+            </h3>
+
+            <p>
+                Sign in and generate something
+                amazing with GLOW.
+            </p>
+
+        `;
+
+    }
 }
 
 
+/* =====================================================
+   KEYBOARD
+===================================================== */
 
-/* =========================================================
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key === "Escape") {
+
+            closeStudio();
+            closeAccount();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
    STARTUP
-   ========================================================= */
+===================================================== */
 
-console.log(
-    "✨ GLOW AI STUDIO 2027 loaded"
-);
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-console.log(
-    "🎵 Music Studio ready"
-);
+        loadCurrentUser();
 
-console.log(
-    "🎬 Video Studio ready"
+        loadCreations();
+
+    }
 );
