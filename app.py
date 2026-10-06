@@ -1,11 +1,10 @@
 import os
 import sqlite3
 import secrets
-import tempfile
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 import fal_client
-from flask import Flask, jsonify, render_template, request, send_from_directory, session
+from flask import Flask, jsonify, request, send_from_directory, session
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -28,7 +27,10 @@ app.secret_key = os.getenv(
     secrets.token_hex(32)
 )
 
-DATABASE = os.getenv("GLOW_DATABASE", "glow.db")
+DATABASE = os.getenv(
+    "GLOW_DATABASE",
+    "glow.db"
+)
 
 FAL_KEY = os.getenv("FAL_KEY")
 
@@ -38,71 +40,52 @@ FAL_KEY = os.getenv("FAL_KEY")
 # =========================================================
 
 MUSIC_MODEL = "fal-ai/ace-step/prompt-to-audio"
+
 IMAGE_MODEL = "fal-ai/flux/schnell"
+
 VIDEO_MODEL = "minimax/h3-max-turbo/text-to-video"
 
 
 # =========================================================
-# PLAN LIMITS
-# =========================================================
-#
-# Free:
-#   Pictures only
-#   5 pictures
-#
-# Trial:
-#   1 video
-#   2 music
-#   5 pictures
-#
-# Weekly:
-#   5 videos
-#   5 music
-#   20 pictures
-#
-# Monthly:
-#   20 videos
-#   15 music
-#   100 pictures
-#
+# PLANS
 # =========================================================
 
-PLAN_LIMITS = {
+PLANS = {
     "free": {
         "price": 0,
-        "video": 0,
+        "images": 5,
         "music": 0,
-        "image": 5,
+        "videos": 0,
         "resolution": "standard",
-        "commercial": False,
+        "commercial": False
     },
 
     "trial": {
         "price": 1000,
-        "video": 1,
+        "images": 5,
         "music": 2,
-        "image": 5,
+        "videos": 1,
         "resolution": "720p",
-        "commercial": False,
+        "commercial": False
     },
 
     "weekly": {
         "price": 2000,
-        "video": 5,
+        "images": 20,
         "music": 5,
-        "image": 20,
+        "videos": 5,
         "resolution": "720p",
-        "commercial": False,
+        "commercial": False
     },
 
     "monthly": {
         "price": 5000,
-        "video": 20,
+        "images": 100,
         "music": 15,
-        "image": 100,
+        "videos": 20,
         "resolution": "1080p",
-        "commercial": True,
-    },
+        "commercial": True
+    }
 }
 
 
@@ -111,40 +94,23 @@ PLAN_LIMITS = {
 # =========================================================
 
 def get_db():
-    db = sqlite3.connect(DATABASE)
-    db.row_factory = sqlite3.Row
-    return db
+    connection = sqlite3.connect(DATABASE)
+
+    connection.row_factory = sqlite3.Row
+
+    return connection
 
 
-def column_exists(db, table_name, column_name):
-    rows = db.execute(
-        f"PRAGMA table_info({table_name})"
-    ).fetchall()
-
-    return any(row["name"] == column_name for row in rows)
-
-
-def add_column_if_missing(
-    db,
-    table_name,
-    column_name,
-    column_definition
-):
-    if not column_exists(db, table_name, column_name):
-        db.execute(
-            f"ALTER TABLE {table_name} "
-            f"ADD COLUMN {column_name} {column_definition}"
-        )
+def now():
+    return datetime.now(timezone.utc).isoformat()
 
 
 def init_db():
-    db = get_db()
 
-    # -----------------------------------------------------
-    # USERS
-    # -----------------------------------------------------
+    connection = get_db()
 
-    db.execute("""
+    connection.execute(
+        """
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
@@ -152,7 +118,6 @@ def init_db():
             password_hash TEXT NOT NULL,
 
             plan TEXT DEFAULT 'free',
-
             credits INTEGER DEFAULT 0,
 
             image_used INTEGER DEFAULT 0,
@@ -168,15 +133,14 @@ def init_db():
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         )
-    """)
+        """
+    )
 
-    # -----------------------------------------------------
-    # CREATIONS
-    # -----------------------------------------------------
-
-    db.execute("""
+    connection.execute(
+        """
         CREATE TABLE IF NOT EXISTS creations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+
             user_id INTEGER NOT NULL,
 
             creation_type TEXT NOT NULL,
@@ -192,15 +156,14 @@ def init_db():
             FOREIGN KEY(user_id)
             REFERENCES users(id)
         )
-    """)
+        """
+    )
 
-    # -----------------------------------------------------
-    # SUBSCRIPTIONS
-    # -----------------------------------------------------
-
-    db.execute("""
+    connection.execute(
+        """
         CREATE TABLE IF NOT EXISTS subscriptions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+
             user_id INTEGER NOT NULL,
 
             plan TEXT NOT NULL,
@@ -216,230 +179,385 @@ def init_db():
             FOREIGN KEY(user_id)
             REFERENCES users(id)
         )
-    """)
+        """
+    )
+
+    connection.commit()
 
     # -----------------------------------------------------
     # DATABASE MIGRATION
     # -----------------------------------------------------
 
-    add_column_if_missing(
-        db,
-        "users",
-        "image_used",
-        "INTEGER DEFAULT 0"
-    )
+    columns = {
+        row["name"]
+        for row in connection.execute(
+            "PRAGMA table_info(users)"
+        ).fetchall()
+    }
 
-    add_column_if_missing(
-        db,
-        "users",
-        "music_used",
-        "INTEGER DEFAULT 0"
-    )
+    new_columns = {
+        "plan": "TEXT DEFAULT 'free'",
+        "credits": "INTEGER DEFAULT 0",
+        "image_used": "INTEGER DEFAULT 0",
+        "music_used": "INTEGER DEFAULT 0",
+        "video_used": "INTEGER DEFAULT 0",
+        "subscription_status": "TEXT DEFAULT 'inactive'",
+        "subscription_expires_at": "TEXT",
+        "profile_name": "TEXT",
+        "profile_photo": "TEXT"
+    }
 
-    add_column_if_missing(
-        db,
-        "users",
-        "video_used",
-        "INTEGER DEFAULT 0"
-    )
+    for column_name, definition in new_columns.items():
 
-    add_column_if_missing(
-        db,
-        "users",
-        "plan",
-        "TEXT DEFAULT 'free'"
-    )
+        if column_name not in columns:
 
-    add_column_if_missing(
-        db,
-        "users",
-        "subscription_status",
-        "TEXT DEFAULT 'inactive'"
-    )
+            connection.execute(
+                f"""
+                ALTER TABLE users
+                ADD COLUMN {column_name} {definition}
+                """
+            )
 
-    add_column_if_missing(
-        db,
-        "users",
-        "subscription_expires_at",
-        "TEXT"
-    )
+    connection.commit()
 
-    db.commit()
-    db.close()
+    connection.close()
 
 
 init_db()
 
 
 # =========================================================
-# TIME HELPERS
-# =========================================================
-
-def now_iso():
-    return datetime.now(timezone.utc).isoformat()
-
-
-# =========================================================
-# AUTH HELPERS
+# USER HELPERS
 # =========================================================
 
 def current_user():
+
     user_id = session.get("user_id")
 
     if not user_id:
         return None
 
-    db = get_db()
+    connection = get_db()
 
-    user = db.execute(
-        "SELECT * FROM users WHERE id = ?",
+    user = connection.execute(
+        """
+        SELECT *
+        FROM users
+        WHERE id = ?
+        """,
         (user_id,)
     ).fetchone()
 
-    db.close()
+    connection.close()
 
     return user
 
 
-def require_login():
+def require_user():
+
     user = current_user()
 
     if not user:
-        return None, jsonify({
-            "ok": False,
-            "error": "Please sign in first."
-        }), 401
 
-    return user, None, None
+        return None, (
+            jsonify({
+                "ok": False,
+                "error": "Please sign in first."
+            }),
+            401
+        )
+
+    return user, None
+
+
+def user_data(user):
+
+    return {
+        "id": user["id"],
+        "username": user["username"],
+        "email": user["email"],
+        "plan": user["plan"] or "free",
+        "subscription_status": (
+            user["subscription_status"]
+            or "inactive"
+        ),
+        "subscription_expires_at": (
+            user["subscription_expires_at"]
+        ),
+        "profile_name": user["profile_name"],
+        "profile_photo": user["profile_photo"]
+    }
 
 
 # =========================================================
-# PLAN HELPERS
+# USAGE
 # =========================================================
 
-def get_plan(user):
-    plan = (user["plan"] or "free").lower()
+def usage_data(user):
 
-    if plan not in PLAN_LIMITS:
+    plan = user["plan"] or "free"
+
+    if plan not in PLANS:
         plan = "free"
 
-    return plan
+    limits = PLANS[plan]
 
-
-def get_usage(user):
-    plan = get_plan(user)
-    limits = PLAN_LIMITS[plan]
+    image_used = user["image_used"] or 0
+    music_used = user["music_used"] or 0
+    video_used = user["video_used"] or 0
 
     return {
         "plan": plan,
 
         "image": {
-            "used": user["image_used"] or 0,
-            "limit": limits["image"],
+            "used": image_used,
+            "limit": limits["images"],
             "remaining": max(
                 0,
-                limits["image"] - (user["image_used"] or 0)
+                limits["images"] - image_used
             )
         },
 
         "music": {
-            "used": user["music_used"] or 0,
+            "used": music_used,
             "limit": limits["music"],
             "remaining": max(
                 0,
-                limits["music"] - (user["music_used"] or 0)
+                limits["music"] - music_used
             )
         },
 
         "video": {
-            "used": user["video_used"] or 0,
-            "limit": limits["video"],
+            "used": video_used,
+            "limit": limits["videos"],
             "remaining": max(
                 0,
-                limits["video"] - (user["video_used"] or 0)
+                limits["videos"] - video_used
             )
         }
     }
 
 
-def resource_column(resource):
-    mapping = {
+def can_generate(user, kind):
+
+    plan = user["plan"] or "free"
+
+    if plan not in PLANS:
+        plan = "free"
+
+    limits = PLANS[plan]
+
+    if kind == "image":
+
+        used = user["image_used"] or 0
+
+        return used < limits["images"]
+
+    if kind == "music":
+
+        used = user["music_used"] or 0
+
+        return used < limits["music"]
+
+    if kind == "video":
+
+        used = user["video_used"] or 0
+
+        return used < limits["videos"]
+
+    return False
+
+
+def consume_usage(user_id, kind):
+
+    columns = {
         "image": "image_used",
         "music": "music_used",
         "video": "video_used"
     }
 
-    return mapping.get(resource)
-
-
-def has_usage(user, resource):
-    plan = get_plan(user)
-    limits = PLAN_LIMITS[plan]
-
-    column = resource_column(resource)
+    column = columns.get(kind)
 
     if not column:
-        return False
+        return
 
-    used = user[column] or 0
-    limit = limits[resource]
+    connection = get_db()
 
-    return used < limit
-
-
-def consume_usage(user_id, resource):
-    column = resource_column(resource)
-
-    if not column:
-        return False
-
-    db = get_db()
-
-    db.execute(
+    connection.execute(
         f"""
         UPDATE users
         SET {column} = COALESCE({column}, 0) + 1,
             updated_at = ?
         WHERE id = ?
         """,
-        (now_iso(), user_id)
+        (
+            now(),
+            user_id
+        )
     )
 
-    db.commit()
-    db.close()
+    connection.commit()
 
-    return True
-
-
-# =========================================================
-# FAL ERROR HELPER
-# =========================================================
-
-def fal_ready():
-    return bool(FAL_KEY)
-
-
-def fal_error_message(error):
-    message = str(error)
-
-    if len(message) > 500:
-        message = message[:500]
-
-    return message
+    connection.close()
 
 
 # =========================================================
-# FILE / PAGE ROUTES
+# CREATION HELPERS
+# =========================================================
+
+def save_creation(
+    user_id,
+    creation_type,
+    prompt,
+    request_id
+):
+
+    connection = get_db()
+
+    cursor = connection.execute(
+        """
+        INSERT INTO creations (
+            user_id,
+            creation_type,
+            prompt,
+            status,
+            request_id,
+            created_at
+        )
+        VALUES (
+            ?,
+            ?,
+            ?,
+            'processing',
+            ?,
+            ?
+        )
+        """,
+        (
+            user_id,
+            creation_type,
+            prompt,
+            request_id,
+            now()
+        )
+    )
+
+    creation_id = cursor.lastrowid
+
+    connection.commit()
+
+    connection.close()
+
+    return creation_id
+
+
+def find_creation(
+    user_id,
+    request_id
+):
+
+    connection = get_db()
+
+    creation = connection.execute(
+        """
+        SELECT *
+        FROM creations
+        WHERE user_id = ?
+        AND request_id = ?
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (
+            user_id,
+            request_id
+        )
+    ).fetchone()
+
+    connection.close()
+
+    return creation
+
+
+def update_creation(
+    creation_id,
+    status,
+    media_url=None
+):
+
+    connection = get_db()
+
+    connection.execute(
+        """
+        UPDATE creations
+        SET status = ?,
+            media_url = COALESCE(?, media_url)
+        WHERE id = ?
+        """,
+        (
+            status,
+            media_url,
+            creation_id
+        )
+    )
+
+    connection.commit()
+
+    connection.close()
+
+
+# =========================================================
+# FAL HELPERS
+# =========================================================
+
+def fal_error(error):
+
+    message = str(error).strip()
+
+    if not message:
+        message = "Unknown FAL error."
+
+    return message[:700]
+
+
+def submit_fal(
+    model,
+    arguments
+):
+
+    if not FAL_KEY:
+
+        raise RuntimeError(
+            "FAL_KEY is not configured in Render."
+        )
+
+    handler = fal_client.submit(
+        model,
+        arguments=arguments
+    )
+
+    return handler.request_id
+
+
+# =========================================================
+# WEBSITE
 # =========================================================
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+
+    return send_from_directory(
+        ".",
+        "index.html"
+    )
 
 
 @app.route("/<path:filename>")
-def static_files(filename):
-    return send_from_directory(".", filename)
+def serve_file(filename):
+
+    return send_from_directory(
+        ".",
+        filename
+    )
 
 
 # =========================================================
@@ -448,25 +566,44 @@ def static_files(filename):
 
 @app.route("/api/health")
 def health():
+
     return jsonify({
+
         "ok": True,
-        "service": "GLOW AI STUDIO 2027",
-        "fal_configured": bool(FAL_KEY),
-        "models": {
-            "music": MUSIC_MODEL,
-            "image": IMAGE_MODEL,
-            "video": VIDEO_MODEL
-        }
+
+        "app":
+            "GLOW AI STUDIO 2027",
+
+        "fal_configured":
+            bool(FAL_KEY),
+
+        "music_engine":
+            "FAL ACE-Step",
+
+        "image_engine":
+            "FAL FLUX Schnell",
+
+        "video_engine":
+            "FAL MiniMax H3 Max Turbo",
+
+        "status":
+            "ok"
     })
 
 
 # =========================================================
-# AUTH — SIGN UP
+# SIGN UP
 # =========================================================
 
-@app.route("/api/auth/signup", methods=["POST"])
+@app.route(
+    "/api/auth/signup",
+    methods=["POST"]
+)
 def signup():
-    data = request.get_json(silent=True) or {}
+
+    data = request.get_json(
+        silent=True
+    ) or {}
 
     username = str(
         data.get("username", "")
@@ -481,46 +618,57 @@ def signup():
     )
 
     if len(username) < 3:
+
         return jsonify({
             "ok": False,
-            "error": "Username must be at least 3 characters."
+            "error":
+                "Username must be at least 3 characters."
         }), 400
 
     if "@" not in email:
+
         return jsonify({
             "ok": False,
-            "error": "Please enter a valid email."
+            "error":
+                "Enter a valid email."
         }), 400
 
     if len(password) < 6:
+
         return jsonify({
             "ok": False,
-            "error": "Password must be at least 6 characters."
+            "error":
+                "Password must be at least 6 characters."
         }), 400
 
-    db = get_db()
+    connection = get_db()
 
-    existing = db.execute(
+    existing = connection.execute(
         """
         SELECT id
         FROM users
         WHERE username = ?
-           OR email = ?
+        OR email = ?
         """,
-        (username, email)
+        (
+            username,
+            email
+        )
     ).fetchone()
 
     if existing:
-        db.close()
+
+        connection.close()
 
         return jsonify({
             "ok": False,
-            "error": "Username or email already exists."
+            "error":
+                "Username or email already exists."
         }), 409
 
-    timestamp = now_iso()
+    timestamp = now()
 
-    cursor = db.execute(
+    cursor = connection.execute(
         """
         INSERT INTO users (
             username,
@@ -535,12 +683,26 @@ def signup():
             created_at,
             updated_at
         )
-        VALUES (?, ?, ?, 'free', 0, 0, 0, 0, 'inactive', ?, ?)
+        VALUES (
+            ?,
+            ?,
+            ?,
+            'free',
+            0,
+            0,
+            0,
+            0,
+            'inactive',
+            ?,
+            ?
+        )
         """,
         (
             username,
             email,
-            generate_password_hash(password),
+            generate_password_hash(
+                password
+            ),
             timestamp,
             timestamp
         )
@@ -548,36 +710,42 @@ def signup():
 
     user_id = cursor.lastrowid
 
-    db.commit()
-    db.close()
+    connection.commit()
+
+    connection.close()
 
     session["user_id"] = user_id
 
+    user = current_user()
+
     return jsonify({
+
         "ok": True,
-        "message": "Account created successfully.",
-        "user": {
-            "id": user_id,
-            "username": username,
-            "email": email,
-            "plan": "free"
-        },
-        "usage": get_usage({
-            "plan": "free",
-            "image_used": 0,
-            "music_used": 0,
-            "video_used": 0
-        })
+
+        "message":
+            "Account created successfully.",
+
+        "user":
+            user_data(user),
+
+        "usage":
+            usage_data(user)
     })
 
 
 # =========================================================
-# AUTH — LOGIN
+# LOGIN
 # =========================================================
 
-@app.route("/api/auth/login", methods=["POST"])
+@app.route(
+    "/api/auth/login",
+    methods=["POST"]
+)
 def login():
-    data = request.get_json(silent=True) or {}
+
+    data = request.get_json(
+        silent=True
+    ) or {}
 
     identity = str(
         data.get("username", "")
@@ -588,98 +756,112 @@ def login():
     )
 
     if not identity or not password:
+
         return jsonify({
             "ok": False,
-            "error": "Enter your username/email and password."
+            "error":
+                "Enter your username/email and password."
         }), 400
 
-    db = get_db()
+    connection = get_db()
 
-    user = db.execute(
+    user = connection.execute(
         """
         SELECT *
         FROM users
         WHERE username = ?
-           OR email = ?
+        OR email = ?
         """,
-        (identity, identity.lower())
+        (
+            identity,
+            identity.lower()
+        )
     ).fetchone()
 
-    db.close()
+    connection.close()
 
     if not user:
+
         return jsonify({
             "ok": False,
-            "error": "Invalid login details."
+            "error":
+                "Invalid login details."
         }), 401
 
     if not check_password_hash(
         user["password_hash"],
         password
     ):
+
         return jsonify({
             "ok": False,
-            "error": "Invalid login details."
+            "error":
+                "Invalid login details."
         }), 401
 
     session["user_id"] = user["id"]
 
     return jsonify({
+
         "ok": True,
-        "message": "Login successful.",
-        "user": {
-            "id": user["id"],
-            "username": user["username"],
-            "email": user["email"],
-            "plan": get_plan(user),
-            "subscription_status": user["subscription_status"]
-        },
-        "usage": get_usage(user)
+
+        "message":
+            "Login successful.",
+
+        "user":
+            user_data(user),
+
+        "usage":
+            usage_data(user)
     })
 
 
 # =========================================================
-# AUTH — LOGOUT
+# LOGOUT
 # =========================================================
 
-@app.route("/api/auth/logout", methods=["POST"])
+@app.route(
+    "/api/auth/logout",
+    methods=["POST"]
+)
 def logout():
+
     session.clear()
 
     return jsonify({
         "ok": True,
-        "message": "Logged out."
+        "message":
+            "Logged out."
     })
 
 
 # =========================================================
-# AUTH — CURRENT USER
+# CURRENT USER
 # =========================================================
 
 @app.route("/api/auth/me")
 def auth_me():
+
     user = current_user()
 
     if not user:
+
         return jsonify({
             "ok": True,
             "logged_in": False
         })
 
     return jsonify({
+
         "ok": True,
+
         "logged_in": True,
-        "user": {
-            "id": user["id"],
-            "username": user["username"],
-            "email": user["email"],
-            "plan": get_plan(user),
-            "subscription_status": user["subscription_status"],
-            "subscription_expires_at": user["subscription_expires_at"],
-            "profile_name": user["profile_name"],
-            "profile_photo": user["profile_photo"]
-        },
-        "usage": get_usage(user)
+
+        "user":
+            user_data(user),
+
+        "usage":
+            usage_data(user)
     })
 
 
@@ -687,42 +869,55 @@ def auth_me():
 # PROFILE
 # =========================================================
 
-@app.route("/api/profile", methods=["GET"])
-def get_profile():
-    user = current_user()
+@app.route(
+    "/api/profile",
+    methods=["GET"]
+)
+def profile_get():
 
-    if not user:
-        return jsonify({
-            "ok": False,
-            "error": "Please sign in first."
-        }), 401
+    user, error = require_user()
+
+    if error:
+        return error
 
     return jsonify({
+
         "ok": True,
+
         "profile": {
-            "username": user["username"],
-            "email": user["email"],
-            "name": user["profile_name"],
-            "photo": user["profile_photo"]
+            "username":
+                user["username"],
+
+            "email":
+                user["email"],
+
+            "name":
+                user["profile_name"],
+
+            "photo":
+                user["profile_photo"]
         }
     })
 
 
-@app.route("/api/profile", methods=["PUT"])
-def update_profile():
-    user, error_response, status = require_login()
+@app.route(
+    "/api/profile",
+    methods=["PUT"]
+)
+def profile_update():
 
-    if error_response:
-        return error_response, status
+    user, error = require_user()
 
-    data = request.get_json(silent=True) or {}
+    if error:
+        return error
 
-    name = data.get("name")
-    photo = data.get("photo")
+    data = request.get_json(
+        silent=True
+    ) or {}
 
-    db = get_db()
+    connection = get_db()
 
-    db.execute(
+    connection.execute(
         """
         UPDATE users
         SET profile_name = ?,
@@ -731,19 +926,21 @@ def update_profile():
         WHERE id = ?
         """,
         (
-            name,
-            photo,
-            now_iso(),
+            data.get("name"),
+            data.get("photo"),
+            now(),
             user["id"]
         )
     )
 
-    db.commit()
-    db.close()
+    connection.commit()
+
+    connection.close()
 
     return jsonify({
         "ok": True,
-        "message": "Profile updated."
+        "message":
+            "Profile updated."
     })
 
 
@@ -753,16 +950,20 @@ def update_profile():
 
 @app.route("/api/plans")
 def plans():
+
     return jsonify({
+
         "ok": True,
+
         "plans": {
+
             "free": {
                 "name": "Free",
                 "price": 0,
                 "currency": "NGN",
-                "video": 0,
+                "videos": 0,
                 "music": 0,
-                "image": 5,
+                "images": 5,
                 "resolution": "Standard",
                 "commercial": False
             },
@@ -771,9 +972,9 @@ def plans():
                 "name": "One-Time Trial",
                 "price": 1000,
                 "currency": "NGN",
-                "video": 1,
+                "videos": 1,
                 "music": 2,
-                "image": 5,
+                "images": 5,
                 "resolution": "720p",
                 "commercial": False
             },
@@ -782,9 +983,9 @@ def plans():
                 "name": "Weekly Tester",
                 "price": 2000,
                 "currency": "NGN",
-                "video": 5,
+                "videos": 5,
                 "music": 5,
-                "image": 20,
+                "images": 20,
                 "resolution": "720p",
                 "commercial": False
             },
@@ -793,9 +994,9 @@ def plans():
                 "name": "Monthly",
                 "price": 5000,
                 "currency": "NGN",
-                "video": 20,
+                "videos": 20,
                 "music": 15,
-                "image": 100,
+                "images": 100,
                 "resolution": "1080p",
                 "commercial": True
             }
@@ -809,84 +1010,93 @@ def plans():
 
 @app.route("/api/usage")
 def usage():
-    user, error_response, status = require_login()
 
-    if error_response:
-        return error_response, status
+    user, error = require_user()
+
+    if error:
+        return error
 
     return jsonify({
+
         "ok": True,
-        "usage": get_usage(user)
+
+        "usage":
+            usage_data(user)
     })
 
 
 # =========================================================
-# SUBSCRIPTION INFO
+# SUBSCRIPTION
 # =========================================================
 
 @app.route("/api/subscription")
 def subscription():
-    user, error_response, status = require_login()
 
-    if error_response:
-        return error_response, status
+    user, error = require_user()
+
+    if error:
+        return error
 
     return jsonify({
+
         "ok": True,
+
         "subscription": {
-            "plan": get_plan(user),
-            "status": user["subscription_status"],
-            "expires_at": user["subscription_expires_at"]
+
+            "plan":
+                user["plan"] or "free",
+
+            "status":
+                user["subscription_status"]
+                or "inactive",
+
+            "expires_at":
+                user["subscription_expires_at"]
         },
-        "usage": get_usage(user)
+
+        "usage":
+            usage_data(user)
     })
 
 
 # =========================================================
-# MUSIC
+# MUSIC GENERATION
 # =========================================================
 
-@app.route("/api/music", methods=["POST"])
+@app.route(
+    "/api/music",
+    methods=["POST"]
+)
 def generate_music():
-    user, error_response, status = require_login()
 
-    if error_response:
-        return error_response, status
+    user, error = require_user()
 
-    if not fal_ready():
-        return jsonify({
-            "ok": False,
-            "error": "FAL_KEY is not configured on the server."
-        }), 500
+    if error:
+        return error
 
-    if not has_usage(user, "music"):
-        plan = get_plan(user)
-
-        if plan == "free":
-            message = (
-                "Music generation is not available on the Free plan. "
-                "Choose a paid plan to create music."
-            )
-        else:
-            message = (
-                "You have used all your music generations "
-                "for this plan."
-            )
+    if not can_generate(
+        user,
+        "music"
+    ):
 
         return jsonify({
+
             "ok": False,
-            "error": message,
-            "usage": get_usage(user)
+
+            "error":
+                "Music generation is not available on your current plan or your music limit is finished.",
+
+            "usage":
+                usage_data(user)
+
         }), 403
 
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(
+        silent=True
+    ) or {}
 
     prompt = str(
         data.get("prompt", "")
-    ).strip()
-
-    lyrics = str(
-        data.get("lyrics", "")
     ).strip()
 
     genre = str(
@@ -897,60 +1107,723 @@ def generate_music():
         data.get("mood", "")
     ).strip()
 
-    duration = data.get("duration", 60)
+    lyrics = str(
+        data.get("lyrics", "")
+    ).strip()
 
     if not prompt and not lyrics:
+
         return jsonify({
+
             "ok": False,
-            "error": "Enter a music prompt or lyrics."
+
+            "error":
+                "Enter a music prompt or lyrics."
         }), 400
 
-    try:
-        duration = int(duration)
-    except Exception:
-        duration = 60
+    pieces = [
+        genre,
+        mood,
+        prompt
+    ]
 
-    duration = max(10, min(duration, 60))
-
-    tags = ", ".join(
-        item for item in [
-            genre,
-            mood,
-            prompt
-        ]
+    pieces = [
+        item for item in pieces
         if item
+    ]
+
+    final_prompt = ", ".join(
+        pieces
     )
 
-    if not tags:
-        tags = "modern music"
+    if not final_prompt:
+        final_prompt = "modern music"
+
+    try:
+
+        duration = int(
+            data.get(
+                "duration",
+                60
+            )
+        )
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        duration = 60
+
+    duration = max(
+        10,
+        min(duration, 60)
+    )
 
     arguments = {
-        "prompt": tags,
-        "duration": duration
+
+        "prompt":
+            final_prompt,
+
+        "duration":
+            duration,
+
+        "instrumental":
+            not bool(lyrics)
     }
 
     if lyrics:
-        arguments["lyrics"] = lyrics
 
-    try:
-        handler = fal_client.submit(
-            MUSIC_MODEL,
-            arguments=arguments
+        arguments["prompt"] = (
+            final_prompt
+            + ". Lyrics: "
+            + lyrics
         )
 
-        request_id = handler.request_id
+    try:
+
+        request_id = submit_fal(
+            MUSIC_MODEL,
+            arguments
+        )
 
     except Exception as exc:
+
         return jsonify({
+
             "ok": False,
-            "error": (
+
+            "error":
                 "FAL music request failed: "
-                + fal_error_message(exc)
-            )
+                + fal_error(exc)
+
         }), 502
 
-    db = get_db()
+    creation_id = save_creation(
+        user["id"],
+        "music",
+        prompt or lyrics,
+        request_id
+    )
 
-    cursor = db.execute(
+    consume_usage(
+        user["id"],
+        "music"
+    )
+
+    fresh_user = current_user()
+
+    return jsonify({
+
+        "ok": True,
+
+        "message":
+            "Music generation started.",
+
+        "request_id":
+            request_id,
+
+        "creation_id":
+            creation_id,
+
+        "usage":
+            usage_data(fresh_user)
+    })
+
+
+# =========================================================
+# IMAGE GENERATION
+# =========================================================
+
+@app.route(
+    "/api/image",
+    methods=["POST"]
+)
+def generate_image():
+
+    user, error = require_user()
+
+    if error:
+        return error
+
+    if not can_generate(
+        user,
+        "image"
+    ):
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "Your picture generation limit is finished.",
+
+            "usage":
+                usage_data(user)
+
+        }), 403
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    prompt = str(
+        data.get("prompt", "")
+    ).strip()
+
+    if not prompt:
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "Enter a picture prompt."
+        }), 400
+
+    arguments = {
+
+        "prompt":
+            prompt,
+
+        "image_size":
+            "landscape_4_3",
+
+        "num_images":
+            1
+    }
+
+    try:
+
+        request_id = submit_fal(
+            IMAGE_MODEL,
+            arguments
+        )
+
+    except Exception as exc:
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "FAL image request failed: "
+                + fal_error(exc)
+
+        }), 502
+
+    creation_id = save_creation(
+        user["id"],
+        "image",
+        prompt,
+        request_id
+    )
+
+    consume_usage(
+        user["id"],
+        "image"
+    )
+
+    fresh_user = current_user()
+
+    return jsonify({
+
+        "ok": True,
+
+        "message":
+            "Picture generation started.",
+
+        "request_id":
+            request_id,
+
+        "creation_id":
+            creation_id,
+
+        "usage":
+            usage_data(fresh_user)
+    })
+
+
+# =========================================================
+# VIDEO GENERATION
+# =========================================================
+
+@app.route(
+    "/api/video",
+    methods=["POST"]
+)
+def generate_video():
+
+    user, error = require_user()
+
+    if error:
+        return error
+
+    if not can_generate(
+        user,
+        "video"
+    ):
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "Video generation is not available on your current plan or your video limit is finished.",
+
+            "usage":
+                usage_data(user)
+
+        }), 403
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    prompt = str(
+        data.get("prompt", "")
+    ).strip()
+
+    if not prompt:
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "Enter a video prompt."
+        }), 400
+
+    plan = user["plan"] or "free"
+
+    if plan == "monthly":
+
+        resolution = "1080P"
+
+    else:
+
+        resolution = "768P"
+
+    arguments = {
+
+        "prompt":
+            prompt,
+
+        "duration":
+            10,
+
+        "resolution":
+            resolution,
+
+        "prompt_expansion_mode":
+            "disabled",
+
+        "aspect_ratio":
+            "16:9",
+
+        "enable_safety_checker":
+            True
+    }
+
+    try:
+
+        request_id = submit_fal(
+            VIDEO_MODEL,
+            arguments
+        )
+
+    except Exception as exc:
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "FAL video request failed: "
+                + fal_error(exc)
+
+        }), 502
+
+    creation_id = save_creation(
+        user["id"],
+        "video",
+        prompt,
+        request_id
+    )
+
+    consume_usage(
+        user["id"],
+        "video"
+    )
+
+    fresh_user = current_user()
+
+    return jsonify({
+
+        "ok": True,
+
+        "message":
+            "Video generation started.",
+
+        "request_id":
+            request_id,
+
+        "creation_id":
+            creation_id,
+
+        "usage":
+            usage_data(fresh_user)
+    })
+
+
+# =========================================================
+# RESULT URL EXTRACTION
+# =========================================================
+
+def get_media_url(
+    result,
+    creation_type
+):
+
+    if not isinstance(
+        result,
+        dict
+    ):
+
+        return None
+
+    if creation_type == "music":
+
+        audio = result.get(
+            "audio"
+        )
+
+        if isinstance(
+            audio,
+            dict
+        ):
+
+            return audio.get(
+                "url"
+            )
+
+    if creation_type == "video":
+
+        video = result.get(
+            "video"
+        )
+
+        if isinstance(
+            video,
+            dict
+        ):
+
+            return video.get(
+                "url"
+            )
+
+    if creation_type == "image":
+
+        images = result.get(
+            "images"
+        )
+
+        if (
+            isinstance(images, list)
+            and len(images) > 0
+            and isinstance(images[0], dict)
+        ):
+
+            return images[0].get(
+                "url"
+            )
+
+    return None
+
+
+# =========================================================
+# GENERATION STATUS
+# =========================================================
+
+@app.route(
+    "/api/generation/status/<request_id>"
+)
+def generation_status(
+    request_id
+):
+
+    user, error = require_user()
+
+    if error:
+        return error
+
+    creation = find_creation(
+        user["id"],
+        request_id
+    )
+
+    if not creation:
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "Generation request not found."
+        }), 404
+
+    creation_type = (
+        creation["creation_type"]
+    )
+
+    models = {
+
+        "music":
+            MUSIC_MODEL,
+
+        "image":
+            IMAGE_MODEL,
+
+        "video":
+            VIDEO_MODEL
+    }
+
+    model = models.get(
+        creation_type
+    )
+
+    if not model:
+
+        return jsonify({
+
+            "ok": False,
+
+            "error":
+                "Unknown generation type."
+        }), 400
+
+    try:
+
+        status = fal_client.status(
+            model,
+            request_id,
+            with_logs=True
+        )
+
+        status_name = getattr(
+            status,
+            "status",
+            None
+        )
+
+        if status_name is None:
+
+            if isinstance(
+                status,
+                dict
+            ):
+
+                status_name = status.get(
+                    "status"
+                )
+
+        status_name = str(
+            status_name or ""
+        ).upper()
+
+        # -------------------------------------------------
+        # STILL PROCESSING
+        # -------------------------------------------------
+
+        if status_name in (
+            "IN_QUEUE",
+            "QUEUED",
+            "IN_PROGRESS",
+            "PROCESSING"
+        ):
+
+            return jsonify({
+
+                "ok": True,
+
+                "status":
+                    "processing",
+
+                "request_id":
+                    request_id
+            })
+
+        # -------------------------------------------------
+        # FAILED
+        # -------------------------------------------------
+
+        if status_name in (
+            "FAILED",
+            "ERROR"
+        ):
+
+            update_creation(
+                creation["id"],
+                "failed"
+            )
+
+            return jsonify({
+
+                "ok": False,
+
+                "status":
+                    "failed",
+
+                "error":
+                    "Generation failed."
+            }), 502
+
+        # -------------------------------------------------
+        # COMPLETED
+        # -------------------------------------------------
+
+        if status_name in (
+            "COMPLETED",
+            "COMPLETE",
+            "SUCCESS"
+        ):
+
+            result = fal_client.result(
+                model,
+                request_id
+            )
+
+            media_url = get_media_url(
+                result,
+                creation_type
+            )
+
+            if media_url:
+
+                update_creation(
+                    creation["id"],
+                    "completed",
+                    media_url
+                )
+
+                return jsonify({
+
+                    "ok": True,
+
+                    "status":
+                        "completed",
+
+                    "request_id":
+                        request_id,
+
+                    "creation_type":
+                        creation_type,
+
+                    "media_url":
+                        media_url
+                })
+
+        return jsonify({
+
+            "ok": True,
+
+            "status":
+                "processing",
+
+            "request_id":
+                request_id
+        })
+
+    except Exception as exc:
+
+        return jsonify({
+
+            "ok": False,
+
+            "status":
+                "error",
+
+            "error":
+                fal_error(exc)
+
+        }), 502
+
+
+# =========================================================
+# MUSIC STATUS
+# =========================================================
+
+@app.route(
+    "/api/music/status/<request_id>"
+)
+def music_status(
+    request_id
+):
+
+    return generation_status(
+        request_id
+    )
+
+
+# =========================================================
+# CREATIONS
+# =========================================================
+
+@app.route("/api/creations")
+def creations():
+
+    user, error = require_user()
+
+    if error:
+        return error
+
+    connection = get_db()
+
+    rows = connection.execute(
         """
-        INSERT INTO creations (
+        SELECT
+            id,
+            creation_type,
+            prompt,
+            status,
+            media_url,
+            request_id,
+            created_at
+        FROM creations
+        WHERE user_id = ?
+        ORDER BY id DESC
+        """,
+        (user["id"],)
+    ).fetchall()
+
+    connection.close()
+
+    return jsonify({
+
+        "ok": True,
+
+        "creations": [
+            dict(row)
+            for row in rows
+        ]
+    })
+
+
+# =========================================================
+# SERVER
+# =========================================================
+
+if __name__ == "__main__":
+
+    port = int(
+        os.getenv(
+            "PORT",
+            "5000"
+        )
+    )
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False
+)
