@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sign Up — GLOW AI STUDIO 2027</title>
+
+    <meta
+        name="description"
+        content="Create your GLOW AI STUDIO 2027 account."
+    >
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="logo">
+            ✨ GLOW
+        </div>
+
+        <a href="/" class="nav-link">Home</a>
+    </header>
+
+    <main class="auth-page">
+
+        <section class="auth-card">
+
+            <div class="auth-icon">✨</div>
+
+            <h1>Create Your Account</h1>
+
+            <p class="auth-subtitle">
+                Join GLOW AI STUDIO 2027 and start creating.
+            </p>
+
+            <form id="signupForm">
+
+                <div class="form-group">
+                    <label for="signupUsername">Username</label>
+
+                    <input
+                        type="text"
+                        id="signupUsername"
+                        name="username"
+                        placeholder="Choose a username"
+                        autocomplete="username"
+                        required
+                        minlength="3"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        name="email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        name="password"
+                        placeholder="Create a password"
+                        autocomplete="new-password"
+                        required
+                        minlength="6"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-btn auth-submit"
+                    id="signupButton"
+                >
+                    Create Account
+                </button>
+
+                <p id="signupMessage" class="auth-message"></p>
+
+            </form>
+
+            <div class="auth-divider">
+                <span>Already have an account?</span>
+            </div>
+
+            <a href="/login.html" class="secondary-btn">
+                Login
+            </a>
+
+        </section>
+
+    </main>
+
+    <script>
+        const signupForm = document.getElementById("signupForm");
+        const signupButton = document.getElementById("signupButton");
+        const signupMessage = document.getElementById("signupMessage");
+
+        signupForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            signupButton.disabled = true;
+            signupButton.textContent = "Creating Account...";
+            signupMessage.textContent = "";
+            signupMessage.className = "auth-message";
+
+            const username = document
+                .getElementById("signupUsername")
+                .value
+                .trim();
+
+            const email = document
+                .getElementById("signupEmail")
+                .value
+                .trim();
+
+            const password = document
+                .getElementById("signupPassword")
+                .value;
+
+            try {
+
+                const response = await fetch("/api/auth/signup", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to create account."
+                    );
+                }
+
+                signupMessage.textContent =
+                    "Account created successfully. Opening your dashboard...";
+
+                signupMessage.classList.add("success");
+
+                setTimeout(() => {
+                    window.location.href = "/dashboard.html";
+                }, 700);
+
+            } catch (error) {
+
+                signupMessage.textContent =
+                    error.message || "Something went wrong.";
+
+                signupMessage.classList.add("error");
+
+                signupButton.disabled = false;
+                signupButton.textContent = "Create Account";
+            }
+        });
+    </script>
+
+</body>
+</html>
