@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login — GLOW AI STUDIO 2027</title>
+
+    <meta
+        name="description"
+        content="Login to GLOW AI STUDIO 2027."
+    >
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="logo">
+            ✨ GLOW
+        </div>
+
+        <a href="/" class="nav-link">Home</a>
+    </header>
+
+    <main class="auth-page">
+
+        <section class="auth-card">
+
+            <div class="auth-icon">✨</div>
+
+            <h1>Welcome Back</h1>
+
+            <p class="auth-subtitle">
+                Login to continue creating with GLOW AI STUDIO 2027.
+            </p>
+
+            <form id="loginForm">
+
+                <div class="form-group">
+                    <label for="loginUsername">Username or Email</label>
+
+                    <input
+                        type="text"
+                        id="loginUsername"
+                        name="username"
+                        placeholder="Username or email"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        name="password"
+                        placeholder="Your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-btn auth-submit"
+                    id="loginButton"
+                >
+                    Login
+                </button>
+
+                <p id="loginMessage" class="auth-message"></p>
+
+            </form>
+
+            <div class="auth-divider">
+                <span>Don't have an account?</span>
+            </div>
+
+            <a href="/signup.html" class="secondary-btn">
+                Create Account
+            </a>
+
+        </section>
+
+    </main>
+
+    <script>
+        const loginForm = document.getElementById("loginForm");
+        const loginButton = document.getElementById("loginButton");
+        const loginMessage = document.getElementById("loginMessage");
+
+        loginForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            loginButton.disabled = true;
+            loginButton.textContent = "Logging In...";
+            loginMessage.textContent = "";
+            loginMessage.className = "auth-message";
+
+            const username = document
+                .getElementById("loginUsername")
+                .value
+                .trim();
+
+            const password = document
+                .getElementById("loginPassword")
+                .value;
+
+            try {
+
+                const response = await fetch("/api/auth/login", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Invalid login details."
+                    );
+                }
+
+                loginMessage.textContent =
+                    "Login successful. Opening your dashboard...";
+
+                loginMessage.classList.add("success");
+
+                setTimeout(() => {
+                    window.location.href = "/dashboard.html";
+                }, 500);
+
+            } catch (error) {
+
+                loginMessage.textContent =
+                    error.message || "Login failed.";
+
+                loginMessage.classList.add("error");
+
+                loginButton.disabled = false;
+                loginButton.textContent = "Login";
+            }
+        });
+    </script>
+
+</body>
+</html>
