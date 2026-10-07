@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
@@ -20,9 +21,10 @@
 
 <body>
 
-    <!-- =========================
+    <!-- =====================================================
          HEADER
-    ========================== -->
+    ====================================================== -->
+
     <header class="dashboard-header">
 
         <div class="brand">
@@ -38,12 +40,14 @@
 
         </div>
 
-
         <div class="header-right">
 
             <div class="user-mini">
 
-                <div class="user-avatar" id="userAvatar">
+                <div
+                    class="user-avatar"
+                    id="userAvatar"
+                >
                     ✨
                 </div>
 
@@ -61,11 +65,10 @@
 
             </div>
 
-
             <button
                 class="logout-btn"
                 type="button"
-                onclick="logoutUser()"
+                id="logoutButton"
             >
                 Logout
             </button>
@@ -75,12 +78,14 @@
     </header>
 
 
-    <!-- =========================
+    <!-- =====================================================
          MAIN DASHBOARD
-    ========================== -->
+    ====================================================== -->
+
     <main class="dashboard">
 
         <!-- WELCOME -->
+
         <section class="welcome-section">
 
             <div>
@@ -106,9 +111,10 @@
         </section>
 
 
-        <!-- =========================
+        <!-- =================================================
              ACCOUNT OVERVIEW
-        ========================== -->
+        ================================================== -->
+
         <section class="account-overview">
 
             <div class="overview-card">
@@ -205,9 +211,10 @@
         </section>
 
 
-        <!-- =========================
+        <!-- =================================================
              CREATIVE STUDIOS
-        ========================== -->
+        ================================================== -->
+
         <section class="studio-section">
 
             <div class="section-heading">
@@ -229,7 +236,9 @@
 
             <div class="dashboard-studio-grid">
 
+
                 <!-- MUSIC -->
+
                 <article class="dashboard-studio-card music-studio">
 
                     <div class="studio-glow"></div>
@@ -263,7 +272,7 @@
                     <button
                         class="studio-action"
                         type="button"
-                        onclick="openStudio('music')"
+                        id="musicButton"
                     >
                         🎵 Create Music
                     </button>
@@ -272,6 +281,7 @@
 
 
                 <!-- VIDEO -->
+
                 <article class="dashboard-studio-card video-studio">
 
                     <div class="studio-glow"></div>
@@ -305,7 +315,7 @@
                     <button
                         class="studio-action"
                         type="button"
-                        onclick="openStudio('video')"
+                        id="videoButton"
                     >
                         🎬 Create Video
                     </button>
@@ -314,6 +324,7 @@
 
 
                 <!-- IMAGE -->
+
                 <article class="dashboard-studio-card image-studio">
 
                     <div class="studio-glow"></div>
@@ -347,7 +358,7 @@
                     <button
                         class="studio-action"
                         type="button"
-                        onclick="openStudio('image')"
+                        id="imageButton"
                     >
                         🖼️ Create Image
                     </button>
@@ -359,9 +370,10 @@
         </section>
 
 
-        <!-- =========================
+        <!-- =================================================
              MY CREATIONS
-        ========================== -->
+        ================================================== -->
+
         <section class="creations-section">
 
             <div class="section-heading creations-heading">
@@ -382,11 +394,10 @@
 
                 </div>
 
-
                 <button
                     class="refresh-btn"
                     type="button"
-                    onclick="loadCreations()"
+                    id="refreshButton"
                 >
                     ↻ Refresh
                 </button>
@@ -421,9 +432,10 @@
         </section>
 
 
-        <!-- =========================
+        <!-- =================================================
              ACCOUNT
-        ========================== -->
+        ================================================== -->
+
         <section class="profile-section">
 
             <div class="section-heading">
@@ -472,7 +484,7 @@
                 <button
                     class="profile-btn"
                     type="button"
-                    onclick="openAccount()"
+                    id="accountButton"
                 >
                     Manage Account
                 </button>
@@ -484,20 +496,26 @@
     </main>
 
 
-    <!-- =========================
+    <!-- =====================================================
          STUDIO MODAL
-    ========================== -->
+    ====================================================== -->
+
     <div
         class="modal"
         id="studioModal"
+        aria-hidden="true"
     >
 
-        <div class="modal-box">
+        <div
+            class="modal-box"
+            id="studioModalBox"
+        >
 
             <button
                 class="close-btn"
                 type="button"
-                onclick="closeModal('studioModal')"
+                id="studioCloseButton"
+                aria-label="Close"
             >
                 ×
             </button>
@@ -511,24 +529,29 @@
     </div>
 
 
-    <!-- =========================
+    <!-- =====================================================
          ACCOUNT MODAL
-    ========================== -->
+    ====================================================== -->
+
     <div
         class="modal"
         id="accountModal"
+        aria-hidden="true"
     >
 
-        <div class="modal-box">
+        <div
+            class="modal-box"
+            id="accountModalBox"
+        >
 
             <button
                 class="close-btn"
                 type="button"
-                onclick="closeModal('accountModal')"
+                id="accountCloseButton"
+                aria-label="Close"
             >
                 ×
             </button>
-
 
             <div id="accountModalContent">
 
@@ -555,9 +578,10 @@
     </div>
 
 
-        <!-- =========================
+    <!-- =====================================================
          FOOTER
-    ========================== -->
+    ====================================================== -->
+
     <footer>
 
         <div class="footer-logo">
@@ -575,10 +599,433 @@
     </footer>
 
 
-    <!-- =========================
-         JAVASCRIPT
-    ========================== -->
-    <script src="/app.js"></script>
+    <!-- =====================================================
+         DASHBOARD CORE JAVASCRIPT
+         This makes the dashboard controls work independently.
+    ====================================================== -->
 
-</body>
-</html>
+    <script>
+
+        "use strict";
+
+
+        /* =================================================
+           ELEMENTS
+        ================================================== */
+
+        const studioModal =
+            document.getElementById("studioModal");
+
+        const accountModal =
+            document.getElementById("accountModal");
+
+        const studioTitle =
+            document.getElementById("studioModalTitle");
+
+        const studioContent =
+            document.getElementById("studioModalContent");
+
+        const accountContent =
+            document.getElementById("accountModalContent");
+
+
+        /* =================================================
+           OPEN STUDIO
+        ================================================== */
+
+        function dashboardOpenStudio(type) {
+
+            if (!studioModal) {
+                alert("Studio window could not be opened.");
+                return;
+            }
+
+
+            if (type === "music") {
+
+                studioTitle.innerHTML = `
+                    <div class="studio-modal-header">
+                        <div class="studio-modal-badge">
+                            GLOW MUSIC
+                        </div>
+
+                        <h2>
+                            🎵 Create Music
+                        </h2>
+
+                        <p>
+                            Turn your idea into AI music.
+                        </p>
+                    </div>
+                `;
+
+
+                studioContent.innerHTML = `
+
+                    <form
+                        id="musicForm"
+                        class="generation-form"
+                    >
+
+                        <label>
+                            Describe your music
+                        </label>
+
+                        <textarea
+                            id="musicPrompt"
+                            placeholder="Example: An energetic Afrobeat song about success and never giving up..."
+                            required
+                        ></textarea>
+
+
+                        <label>
+                            Genre
+                        </label>
+
+                        <select id="musicGenre">
+
+                            <option value="Afrobeats">
+                                Afrobeats
+                            </option>
+
+                            <option value="Amapiano">
+                                Amapiano
+                            </option>
+
+                            <option value="Pop">
+                                Pop
+                            </option>
+
+                            <option value="Hip Hop">
+                                Hip Hop
+                            </option>
+
+                            <option value="R&B">
+                                R&B
+                            </option>
+
+                            <option value="Gospel">
+                                Gospel
+                            </option>
+
+                        </select>
+
+
+                        <label>
+                            Mood
+                        </label>
+
+                        <select id="musicMood">
+
+                            <option value="Energetic">
+                                Energetic
+                            </option>
+
+                            <option value="Happy">
+                                Happy
+                            </option>
+
+                            <option value="Emotional">
+                                Emotional
+                            </option>
+
+                            <option value="Romantic">
+                                Romantic
+                            </option>
+
+                            <option value="Chill">
+                                Chill
+                            </option>
+
+                        </select>
+
+
+                        <button
+                            type="submit"
+                            class="primary-btn"
+                        >
+                            🎵 Continue
+                        </button>
+
+                    </form>
+                `;
+
+
+                const musicForm =
+                    document.getElementById("musicForm");
+
+                musicForm.addEventListener(
+                    "submit",
+                    function(event) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "GLOW Music Studio is open and ready. AI generation will be connected next."
+                        );
+
+                    }
+                );
+
+            }
+
+
+            else if (type === "video") {
+
+                studioTitle.innerHTML = `
+                    <div class="studio-modal-header">
+                        <div class="studio-modal-badge">
+                            GLOW VIDEO
+                        </div>
+
+                        <h2>
+                            🎬 Create Video
+                        </h2>
+
+                        <p>
+                            Turn your idea into an AI video.
+                        </p>
+                    </div>
+                `;
+
+
+                studioContent.innerHTML = `
+
+                    <form
+                        id="videoForm"
+                        class="generation-form"
+                    >
+
+                        <label>
+                            Describe your video
+                        </label>
+
+                        <textarea
+                            id="videoPrompt"
+                            placeholder="Example: A futuristic Lagos city at night with neon lights..."
+                            required
+                        ></textarea>
+
+
+                        <label>
+                            Duration
+                        </label>
+
+                        <select id="videoDuration">
+
+                            <option value="5">
+                                5 seconds
+                            </option>
+
+                            <option value="10">
+                                10 seconds
+                            </option>
+
+                        </select>
+
+
+                        <button
+                            type="submit"
+                            class="primary-btn"
+                        >
+                            🎬 Continue
+                        </button>
+
+                    </form>
+                `;
+
+
+                const videoForm =
+                    document.getElementById("videoForm");
+
+                videoForm.addEventListener(
+                    "submit",
+                    function(event) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "GLOW Video Studio is open and ready. AI generation will be connected next."
+                        );
+
+                    }
+                );
+
+            }
+
+
+            else if (type === "image") {
+
+                studioTitle.innerHTML = `
+                    <div class="studio-modal-header">
+                        <div class="studio-modal-badge">
+                            GLOW IMAGE
+                        </div>
+
+                        <h2>
+                            🖼️ Create Image
+                        </h2>
+
+                        <p>
+                            Turn your idea into an AI image.
+                        </p>
+                    </div>
+                `;
+
+
+                studioContent.innerHTML = `
+
+                    <form
+                        id="imageForm"
+                        class="generation-form"
+                    >
+
+                        <label>
+                            Describe your image
+                        </label>
+
+                        <textarea
+                            id="imagePrompt"
+                            placeholder="Example: A beautiful cinematic portrait of an African artist..."
+                            required
+                        ></textarea>
+
+
+                        <label>
+                            Image size
+                        </label>
+
+                        <select id="imageSize">
+
+                            <option value="square">
+                                Square
+                            </option>
+
+                            <option value="landscape">
+                                Landscape
+                            </option>
+
+                            <option value="portrait">
+                                Portrait
+                            </option>
+
+                        </select>
+
+
+                        <button
+                            type="submit"
+                            class="primary-btn"
+                        >
+                            🖼️ Continue
+                        </button>
+
+                    </form>
+                `;
+
+
+                const imageForm =
+                    document.getElementById("imageForm");
+
+                imageForm.addEventListener(
+                    "submit",
+                    function(event) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "GLOW Image Studio is open and ready. AI generation will be connected next."
+                        );
+
+                    }
+                );
+
+            }
+
+
+            studioModal.style.display = "flex";
+
+            studioModal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+            document.body.style.overflow = "hidden";
+        }
+
+
+        /* =================================================
+           CLOSE STUDIO
+        ================================================== */
+
+        function dashboardCloseStudio() {
+
+            if (!studioModal) return;
+
+            studioModal.style.display = "none";
+
+            studioModal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            document.body.style.overflow = "";
+        }
+
+
+        /* =================================================
+           ACCOUNT
+        ================================================== */
+
+        function dashboardOpenAccount() {
+
+            if (!accountModal) {
+                alert("Account window could not be opened.");
+                return;
+            }
+
+
+            accountContent.innerHTML = `
+
+                <div class="studio-modal-header">
+
+                    <div class="studio-modal-badge">
+                        GLOW ACCOUNT
+                    </div>
+
+                    <h2>
+                        👤 My Account
+                    </h2>
+
+                    <p>
+                        Your GLOW account information.
+                    </p>
+
+                </div>
+
+
+                <div class="account-information">
+
+                    <p>
+                        <strong>Username</strong>
+                    </p>
+
+                    <p id="accountUsername">
+                        Loading...
+                    </p>
+
+
+                    <p>
+                        <strong>Email</strong>
+                    </p>
+
+                    <p id="accountEmail">
+                        Loading...
+                    </p>
+
+
+                    <p>
+                        <strong>Plan</strong>
+                    </p>
+
+                    <p>
+                       
