@@ -1,12 +1,22 @@
 import os
 import sqlite3
-import secrets
+import tempfile
 from datetime import datetime, timezone
 
 import fal_client
-from flask import Flask, jsonify, request, send_from_directory, session, redirect
+from flask import (
+    Flask,
+    jsonify,
+    request,
+    send_from_directory,
+    session,
+    redirect
+)
 from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
 
 
 # ============================================================
@@ -30,9 +40,16 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=True,
+
+    # Maximum uploaded image size: 15 MB
+    MAX_CONTENT_LENGTH=15 * 1024 * 1024
 )
 
-# CORS is kept available for future separate frontend use.
+
+# ============================================================
+# CORS
+# ============================================================
+
 frontend_origin = os.getenv("GLOW_FRONTEND_ORIGIN")
 
 if frontend_origin:
@@ -55,7 +72,12 @@ DATABASE = os.getenv(
 FAL_KEY = os.getenv("FAL_KEY")
 
 MUSIC_MODEL = "fal-ai/ace-step/prompt-to-audio"
+
 IMAGE_MODEL = "fal-ai/flux/schnell"
+
+# Image editing model
+IMAGE_EDIT_MODEL = "fal-ai/flux-pro/kontext/max"
+
 VIDEO_MODEL = "minimax/h3-max-turbo/text-to-video"
 
 
@@ -117,6 +139,7 @@ def get_db():
 
 
 def init_db():
+
     conn = get_db()
     cursor = conn.cursor()
 
@@ -174,10 +197,6 @@ def init_db():
         )
     """)
 
-    # --------------------------------------------------------
-    # Safe migration for older databases
-    # --------------------------------------------------------
-
     existing_columns = {
         row["name"]
         for row in cursor.execute(
@@ -186,6 +205,7 @@ def init_db():
     }
 
     migrations = {
+
         "credits":
             "ALTER TABLE users ADD COLUMN credits INTEGER NOT NULL DEFAULT 0",
 
@@ -218,7 +238,9 @@ def init_db():
     }
 
     for column, sql in migrations.items():
+
         if column not in existing_columns:
+
             try:
                 cursor.execute(sql)
             except sqlite3.OperationalError:
@@ -240,6 +262,7 @@ def now_iso():
 
 
 def current_user():
+
     user_id = session.get("user_id")
 
     if not user_id:
@@ -248,7 +271,11 @@ def current_user():
     conn = get_db()
 
     user = conn.execute(
-        "SELECT * FROM users WHERE id = ?",
+        """
+        SELECT *
+        FROM users
+        WHERE id = ?
+        """,
         (user_id,)
     ).fetchone()
 
@@ -258,9 +285,11 @@ def current_user():
 
 
 def require_user():
+
     user = current_user()
 
     if not user:
+
         return None, jsonify({
             "ok": False,
             "error": "Authentication required."
@@ -270,6 +299,7 @@ def require_user():
 
 
 def user_data(user):
+
     return {
         "id": user["id"],
         "username": user["username"],
@@ -284,6 +314,7 @@ def user_data(user):
 
 
 def usage_data(user):
+
     plan_name = user["plan"]
 
     plan = PLANS.get(
@@ -296,6 +327,7 @@ def usage_data(user):
     video_used = user["video_used"] or 0
 
     return {
+
         "plan": plan_name,
 
         "image": {
@@ -327,28 +359,37 @@ def usage_data(user):
     }
 
 
-def can_generate(user, generation_type):
+def can_generate(
+    user,
+    generation_type
+):
+
     plan = PLANS.get(
         user["plan"],
         PLANS["free"]
     )
 
     if generation_type == "image":
+
         limit = plan["images"]
         used = user["image_used"] or 0
 
     elif generation_type == "music":
+
         limit = plan["music"]
         used = user["music_used"] or 0
 
     elif generation_type == "video":
+
         limit = plan["videos"]
         used = user["video_used"] or 0
 
     else:
+
         return False, "Invalid generation type."
 
     if used >= limit:
+
         return False, (
             f"{generation_type.title()} generation limit "
             "reached for your current plan."
@@ -357,14 +398,23 @@ def can_generate(user, generation_type):
     return True, None
 
 
-def consume_usage(user_id, generation_type):
+def consume_usage(
+    user_id,
+    generation_type
+):
+
     column_map = {
+
         "image": "image_used",
+
         "music": "music_used",
+
         "video": "video_used",
     }
 
-    column = column_map.get(generation_type)
+    column = column_map.get(
+        generation_type
+    )
 
     if not column:
         return
@@ -396,6 +446,7 @@ def save_creation(
     media_url=None,
     request_id=None
 ):
+
     conn = get_db()
 
     cursor = conn.execute(
@@ -436,6 +487,7 @@ def update_creation(
     status=None,
     media_url=None
 ):
+
     conn = get_db()
 
     if status is not None and media_url is not None:
@@ -490,6 +542,7 @@ def get_creation_by_request(
     user_id,
     request_id
 ):
+
     conn = get_db()
 
     creation = conn.execute(
@@ -515,7 +568,9 @@ def submit_fal(
     model,
     arguments
 ):
+
     if not FAL_KEY:
+
         raise RuntimeError(
             "FAL_KEY is not configured in Render Environment Variables."
         )
@@ -527,20 +582,19 @@ def submit_fal(
 
 
 def extract_media_url(result):
+
     if not result:
         return None
 
     if not isinstance(result, dict):
         return None
 
-    # Direct URL
     if isinstance(
         result.get("url"),
         str
     ):
         return result["url"]
 
-    # Common FAL output formats
     for key in [
         "audio",
         "video",
@@ -562,7 +616,6 @@ def extract_media_url(result):
 
             return value
 
-    # Images array
     images = result.get("images")
 
     if isinstance(images, list) and images:
@@ -576,7 +629,6 @@ def extract_media_url(result):
             if isinstance(url, str):
                 return url
 
-    # Videos array
     videos = result.get("videos")
 
     if isinstance(videos, list) and videos:
@@ -590,7 +642,6 @@ def extract_media_url(result):
             if isinstance(url, str):
                 return url
 
-    # Audio files array
     audio_files = result.get("audio_files")
 
     if isinstance(
@@ -616,6 +667,7 @@ def extract_media_url(result):
 
 @app.route("/")
 def home():
+
     return send_from_directory(
         ".",
         "index.html"
@@ -628,6 +680,7 @@ def home():
 
 @app.route("/dashboard.html")
 def dashboard():
+
     if not current_user():
         return redirect("/")
 
@@ -639,6 +692,7 @@ def dashboard():
 
 @app.route("/dashboard")
 def dashboard_short():
+
     if not current_user():
         return redirect("/")
 
@@ -653,13 +707,21 @@ def dashboard_short():
 def health():
 
     return jsonify({
+
         "ok": True,
+
         "status": "ok",
+
         "fal_configured": bool(FAL_KEY),
 
         "models": {
+
             "image": IMAGE_MODEL,
+
+            "image_edit": IMAGE_EDIT_MODEL,
+
             "music": MUSIC_MODEL,
+
             "video": VIDEO_MODEL,
         }
     })
@@ -788,13 +850,19 @@ def signup():
     session["user_id"] = user_id
 
     return jsonify({
+
         "ok": True,
+
         "message": "Account created successfully.",
 
         "user": {
+
             "id": user_id,
+
             "username": username,
+
             "email": email,
+
             "plan": "free"
         }
     })
@@ -881,8 +949,11 @@ def login():
     session["user_id"] = user["id"]
 
     return jsonify({
+
         "ok": True,
+
         "message": "Login successful.",
+
         "user": user_data(user)
     })
 
@@ -900,7 +971,9 @@ def logout():
     session.clear()
 
     return jsonify({
+
         "ok": True,
+
         "message": "Logged out successfully."
     })
 
@@ -917,14 +990,20 @@ def auth_me():
     if not user:
 
         return jsonify({
+
             "ok": False,
+
             "authenticated": False
         }), 401
 
     return jsonify({
+
         "ok": True,
+
         "authenticated": True,
+
         "user": user_data(user),
+
         "usage": usage_data(user)
     })
 
@@ -1000,660 +1079,11 @@ def update_profile():
     conn.close()
 
     return jsonify({
+
         "ok": True,
+
         "user": user_data(updated_user)
     })
 
 
-# ============================================================
-# PLANS
-# ============================================================
-
-@app.route("/api/plans")
-def plans():
-
-    return jsonify({
-        "ok": True,
-        "plans": PLANS
-    })
-
-
-# ============================================================
-# USAGE
-# ============================================================
-
-@app.route("/api/usage")
-def usage():
-
-    user, error_response, error_status = require_user()
-
-    if error_response:
-        return error_response, error_status
-
-    return jsonify({
-        "ok": True,
-        "usage": usage_data(user)
-    })
-
-
-# ============================================================
-# SUBSCRIPTION
-# ============================================================
-
-@app.route("/api/subscription")
-def subscription():
-
-    user, error_response, error_status = require_user()
-
-    if error_response:
-        return error_response, error_status
-
-    plan = PLANS.get(
-        user["plan"],
-        PLANS["free"]
-    )
-
-    return jsonify({
-        "ok": True,
-
-        "subscription": {
-            "plan": user["plan"],
-            "name": plan["name"],
-            "status": user["subscription_status"],
-            "expires_at": user["subscription_expires_at"],
-            "commercial": plan["commercial"],
-            "resolution": plan["resolution"],
-        }
-    })
-
-
-# ============================================================
-# MUSIC GENERATION
-# ============================================================
-
-@app.route(
-    "/api/music",
-    methods=["POST"]
-)
-def generate_music():
-
-    user, error_response, error_status = require_user()
-
-    if error_response:
-        return error_response, error_status
-
-    allowed, reason = can_generate(
-        user,
-        "music"
-    )
-
-    if not allowed:
-
-        return jsonify({
-            "ok": False,
-            "error": reason
-        }), 403
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    prompt = str(
-        data.get("prompt", "")
-    ).strip()
-
-    genre = str(
-        data.get("genre", "")
-    ).strip()
-
-    mood = str(
-        data.get("mood", "")
-    ).strip()
-
-    try:
-        duration = int(
-            data.get(
-                "duration",
-                30
-            )
-        )
-
-    except (
-        TypeError,
-        ValueError
-    ):
-        duration = 30
-
-    duration = max(
-        10,
-        min(duration, 60)
-    )
-
-    if not prompt:
-
-        return jsonify({
-            "ok": False,
-            "error": (
-                "Music prompt is required."
-            )
-        }), 400
-
-    combined_prompt = prompt
-
-    if genre:
-        combined_prompt += (
-            f", genre: {genre}"
-        )
-
-    if mood:
-        combined_prompt += (
-            f", mood: {mood}"
-        )
-
-    try:
-
-        handler = submit_fal(
-            MUSIC_MODEL,
-            {
-                "prompt": combined_prompt,
-                "duration": duration,
-            }
-        )
-
-        request_id = getattr(
-            handler,
-            "request_id",
-            None
-        )
-
-        if not request_id:
-
-            raise RuntimeError(
-                "FAL did not return a request ID."
-            )
-
-        creation_id = save_creation(
-            user["id"],
-            "music",
-            prompt,
-            "submitted",
-            None,
-            request_id
-        )
-
-        consume_usage(
-            user["id"],
-            "music"
-        )
-
-        return jsonify({
-            "ok": True,
-            "request_id": request_id,
-            "creation_id": creation_id
-        })
-
-    except Exception as exc:
-
-        return jsonify({
-            "ok": False,
-            "error": str(exc)
-        }), 500
-
-
-# ============================================================
-# IMAGE GENERATION
-# ============================================================
-
-@app.route(
-    "/api/image",
-    methods=["POST"]
-)
-def generate_image():
-
-    user, error_response, error_status = require_user()
-
-    if error_response:
-        return error_response, error_status
-
-    allowed, reason = can_generate(
-        user,
-        "image"
-    )
-
-    if not allowed:
-
-        return jsonify({
-            "ok": False,
-            "error": reason
-        }), 403
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    prompt = str(
-        data.get("prompt", "")
-    ).strip()
-
-    image_size = str(
-        data.get(
-            "image_size",
-            "landscape_4_3"
-        )
-    ).strip()
-
-    if not prompt:
-
-        return jsonify({
-            "ok": False,
-            "error": (
-                "Image prompt is required."
-            )
-        }), 400
-
-    allowed_sizes = {
-        "square_hd",
-        "square",
-        "portrait_4_3",
-        "portrait_16_9",
-        "landscape_4_3",
-        "landscape_16_9"
-    }
-
-    if image_size not in allowed_sizes:
-
-        image_size = "landscape_4_3"
-
-    try:
-
-        handler = submit_fal(
-            IMAGE_MODEL,
-            {
-                "prompt": prompt,
-                "image_size": image_size,
-                "num_images": 1
-            }
-        )
-
-        request_id = getattr(
-            handler,
-            "request_id",
-            None
-        )
-
-        if not request_id:
-
-            raise RuntimeError(
-                "FAL did not return a request ID."
-            )
-
-        creation_id = save_creation(
-            user["id"],
-            "image",
-            prompt,
-            "submitted",
-            None,
-            request_id
-        )
-
-        consume_usage(
-            user["id"],
-            "image"
-        )
-
-        return jsonify({
-            "ok": True,
-            "request_id": request_id,
-            "creation_id": creation_id
-        })
-
-    except Exception as exc:
-
-        return jsonify({
-            "ok": False,
-            "error": str(exc)
-        }), 500
-
-
-# ============================================================
-# VIDEO GENERATION
-# ============================================================
-
-@app.route(
-    "/api/video",
-    methods=["POST"]
-)
-def generate_video():
-
-    user, error_response, error_status = require_user()
-
-    if error_response:
-        return error_response, error_status
-
-    allowed, reason = can_generate(
-        user,
-        "video"
-    )
-
-    if not allowed:
-
-        return jsonify({
-            "ok": False,
-            "error": reason
-        }), 403
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    prompt = str(
-        data.get("prompt", "")
-    ).strip()
-
-    if not prompt:
-
-        return jsonify({
-            "ok": False,
-            "error": (
-                "Video prompt is required."
-            )
-        }), 400
-
-    plan = PLANS.get(
-        user["plan"],
-        PLANS["free"]
-    )
-
-    resolution = (
-        "1080P"
-        if plan["resolution"] == "1080p"
-        else "768P"
-    )
-
-    try:
-
-        handler = submit_fal(
-            VIDEO_MODEL,
-            {
-                "prompt": prompt,
-                "duration": 10,
-                "resolution": resolution,
-                "aspect_ratio": "16:9"
-            }
-        )
-
-        request_id = getattr(
-            handler,
-            "request_id",
-            None
-        )
-
-        if not request_id:
-
-            raise RuntimeError(
-                "FAL did not return a request ID."
-            )
-
-        creation_id = save_creation(
-            user["id"],
-            "video",
-            prompt,
-            "submitted",
-            None,
-            request_id
-        )
-
-        consume_usage(
-            user["id"],
-            "video"
-        )
-
-        return jsonify({
-            "ok": True,
-            "request_id": request_id,
-            "creation_id": creation_id
-        })
-
-    except Exception as exc:
-
-        return jsonify({
-            "ok": False,
-            "error": str(exc)
-        }), 500
-
-
-# ============================================================
-# GENERATION STATUS
-# ============================================================
-
-@app.route(
-    "/api/generation/status/<request_id>"
-)
-def generation_status(request_id):
-
-    user, error_response, error_status = require_user()
-
-    if error_response:
-        return error_response, error_status
-
-    creation = get_creation_by_request(
-        user["id"],
-        request_id
-    )
-
-    if not creation:
-
-        return jsonify({
-            "ok": False,
-            "error": (
-                "Generation request not found."
-            )
-        }), 404
-
-    try:
-
-        status = fal_client.status(
-            request_id,
-            with_logs=False
-        )
-
-        status_name = getattr(
-            status,
-            "status",
-            None
-        )
-
-        if status_name is None:
-            status_name = str(status)
-
-        status_name = str(
-            status_name
-        )
-
-        normalized_status = status_name.upper()
-
-        if normalized_status in {
-            "COMPLETED",
-            "SUCCEEDED"
-        }:
-
-            result = fal_client.result(
-                request_id
-            )
-
-            media_url = extract_media_url(
-                result
-            )
-
-            update_creation(
-                creation["id"],
-                "completed",
-                media_url
-            )
-
-            return jsonify({
-                "ok": True,
-                "status": "completed",
-                "media_url": media_url,
-                "result": result
-            })
-
-        if normalized_status in {
-            "FAILED",
-            "ERROR",
-            "CANCELLED"
-        }:
-
-            update_creation(
-                creation["id"],
-                "failed"
-            )
-
-            return jsonify({
-                "ok": True,
-                "status": "failed"
-            })
-
-        return jsonify({
-            "ok": True,
-            "status": "processing"
-        })
-
-    except Exception as exc:
-
-        return jsonify({
-            "ok": False,
-            "error": str(exc)
-        }), 500
-
-
-# ============================================================
-# MUSIC STATUS
-# ============================================================
-
-@app.route(
-    "/api/music/status/<request_id>"
-)
-def music_status(request_id):
-
-    return generation_status(
-        request_id
-    )
-
-
-# ============================================================
-# MY CREATIONS
-# ============================================================
-
-@app.route("/api/creations")
-def creations():
-
-    user, error_response, error_status = require_user()
-
-    if error_response:
-        return error_response, error_status
-
-    conn = get_db()
-
-    rows = conn.execute(
-        """
-        SELECT
-            id,
-            creation_type,
-            prompt,
-            status,
-            media_url,
-            request_id,
-            created_at
-        FROM creations
-        WHERE user_id = ?
-        ORDER BY id DESC
-        """,
-        (
-            user["id"],
-        )
-    ).fetchall()
-
-    conn.close()
-
-    items = []
-
-    for row in rows:
-
-        items.append({
-            "id": row["id"],
-            "type": row["creation_type"],
-            "prompt": row["prompt"],
-            "status": row["status"],
-            "media_url": row["media_url"],
-            "request_id": row["request_id"],
-            "created_at": row["created_at"],
-        })
-
-    return jsonify({
-        "ok": True,
-        "creations": items
-    })
-
-
-# ============================================================
-# SERVE STATIC FILES
-# ============================================================
-
-@app.route(
-    "/<path:filename>"
-)
-def static_files(filename):
-
-    # Keep API routes from being handled here.
-    if filename.startswith("api/"):
-        return jsonify({
-            "ok": False,
-            "error": "Route not found."
-        }), 404
-
-    return send_from_directory(
-        ".",
-        filename
-    )
-
-
-# ============================================================
-# ERROR HANDLERS
-# ============================================================
-
-@app.errorhandler(404)
-def not_found(error):
-
-    return jsonify({
-        "ok": False,
-        "error": "Route not found."
-    }), 404
-
-
-@app.errorhandler(500)
-def internal_error(error):
-
-    return jsonify({
-        "ok": False,
-        "error": "Internal server error."
-    }), 500
-
-
-# ============================================================
-# START SERVER
-# ============================================================
-
-if __name__ == "__main__":
-
-    port = int(
-        os.getenv(
-            "PORT",
-            "5000"
-        )
-    )
-
-    app.run(
-        host="0.0.0.0",
-        port=port
-)
+# =================================================
