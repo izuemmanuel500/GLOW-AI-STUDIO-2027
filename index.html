@@ -1,573 +1,385 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>GLOW AI STUDIO 2027 — Dashboard</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<meta name="description" content="GLOW AI STUDIO 2027 creator dashboard.">
+    <title>GLOW AI STUDIO 2027</title>
 
-<link rel="stylesheet" href="/dashboard.css">
+    <meta
+        name="description"
+        content="GLOW AI STUDIO 2027 — Next-generation AI creative studio."
+    >
 
-</head><body><header class="dashboard-header"><div class="brand">
-    <div class="brand-icon">✨</div>
+    <link rel="stylesheet" href="/style.css">
+</head>
 
-    <div class="brand-text">
-        <strong>GLOW</strong>
-        <small>AI STUDIO 2027</small>
-    </div>
-</div>
+<body>
 
-<div class="header-right">
+    <!-- =========================
+         HEADER
+    ========================== -->
+    <header class="topbar">
 
-    <div class="user-mini">
-        <div class="user-avatar" id="userAvatar">✨</div>
-
-        <div class="user-info">
-            <strong id="headerUsername">Loading...</strong>
-            <small id="headerPlan">GLOW FREE</small>
-        </div>
-    </div>
-
-    <button class="logout-btn" type="button" onclick="logoutUser()">
-        Logout
-    </button>
-
-</div>
-
-</header><main class="dashboard"><section class="welcome-section">
-
-    <div>
-
-        <div class="dashboard-badge">
-            ✨ CREATOR DASHBOARD
+        <div class="logo">
+            <span class="logo-star">✦</span>
+            <span>GLOW</span>
         </div>
 
-        <h1>
-            Welcome,
-            <span id="welcomeUsername">Creator</span>
-        </h1>
+        <nav class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#studios">Studios</a>
+            <a href="#features">Features</a>
+        </nav>
+
+        <div class="nav-actions">
+            <a href="/login.html" class="nav-login">
+                Login
+            </a>
+
+            <a href="/signup.html" class="nav-signup">
+                Sign Up
+            </a>
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         HERO
+    ========================== -->
+    <main id="home">
+
+        <section class="hero">
+
+            <div class="hero-glow glow-one"></div>
+            <div class="hero-glow glow-two"></div>
+
+            <div class="hero-content">
+
+                <div class="hero-badge">
+                    ✨ NEXT-GENERATION AI CREATION
+                </div>
+
+                <h1>
+                    Turn Your
+                    <span>Imagination</span>
+                    Into Reality.
+                </h1>
+
+                <p>
+                    Create music, videos, images, stories,
+                    characters and unforgettable experiences
+                    with GLOW AI STUDIO 2027.
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a href="/signup.html" class="primary-btn">
+                        🚀 Start Creating
+                    </a>
+
+                    <a href="/login.html" class="secondary-btn">
+                        🔐 Login
+                    </a>
+
+                </div>
+
+                <div class="hero-note">
+                    Create your account to access the GLOW AI dashboard.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             STUDIOS
+        ========================== -->
+        <section class="studios-section" id="studios">
+
+            <div class="section-heading">
+
+                <div class="section-badge">
+                    GLOW
+                </div>
+
+                <h2>
+                    AI CREATION STUDIO
+                </h2>
+
+                <p>
+                    Create without limits.
+                    Choose your creative engine.
+                </p>
+
+            </div>
+
+
+            <div class="studio-grid">
+
+                <!-- MUSIC -->
+                <div class="studio-card music-card">
+
+                    <div class="studio-icon">
+                        🎵
+                    </div>
+
+                    <h3>
+                        GLOW MUSIC
+                    </h3>
+
+                    <span>
+                        AI Music
+                    </span>
+
+                    <p>
+                        Turn your ideas into complete
+                        AI-generated music and songs.
+                    </p>
+
+                    <a href="/signup.html" class="studio-btn">
+                        Create Music
+                    </a>
+
+                </div>
+
+
+                <!-- VIDEO -->
+                <div class="studio-card video-card">
+
+                    <div class="studio-icon">
+                        🎬
+                    </div>
+
+                    <h3>
+                        GLOW VIDEO
+                    </h3>
+
+                    <span>
+                        AI Video
+                    </span>
+
+                    <p>
+                        Transform your imagination into
+                        cinematic AI-generated videos.
+                    </p>
+
+                    <a href="/signup.html" class="studio-btn">
+                        Create Video
+                    </a>
+
+                </div>
+
+
+                <!-- IMAGE -->
+                <div class="studio-card image-card">
+
+                    <div class="studio-icon">
+                        🖼️
+                    </div>
+
+                    <h3>
+                        GLOW IMAGE
+                    </h3>
+
+                    <span>
+                        AI Images
+                    </span>
+
+                    <p>
+                        Create stunning AI images from
+                        simple ideas and descriptions.
+                    </p>
+
+                    <a href="/signup.html" class="studio-btn">
+                        Create Images
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             FEATURES
+        ========================== -->
+        <section class="features-section" id="features">
+
+            <div class="section-heading">
+
+                <div class="section-badge">
+                    ✨ GLOW AI
+                </div>
+
+                <h2>
+                    ONE STUDIO.
+                    <span>ENDLESS CREATION.</span>
+                </h2>
+
+                <p>
+                    Everything you need to turn your ideas
+                    into digital creations.
+                </p>
+
+            </div>
+
+
+            <div class="features-grid">
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+
+                    <h3>Fast Creation</h3>
+
+                    <p>
+                        Generate creative content from
+                        simple prompts.
+                    </p>
+                </div>
+
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+
+                    <h3>AI Powered</h3>
+
+                    <p>
+                        Advanced artificial intelligence
+                        helps bring your ideas to life.
+                    </p>
+                </div>
+
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+
+                    <h3>Creative Freedom</h3>
+
+                    <p>
+                        Explore music, video, images and
+                        new creative possibilities.
+                    </p>
+                </div>
+
+
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+
+                    <h3>Your Creations</h3>
+
+                    <p>
+                        Keep your generated creations
+                        organized inside your account.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             FINAL CTA
+        ========================== -->
+        <section class="cta-section">
+
+            <div class="cta-box">
+
+                <div class="cta-icon">
+                    ✨
+                </div>
+
+                <h2>
+                    Your imagination starts here.
+                </h2>
+
+                <p>
+                    Create your free GLOW account and
+                    enter the future of AI creativity.
+                </p>
+
+                <a href="/signup.html" class="primary-btn">
+                    Create Free Account
+                </a>
+
+                <div class="cta-login">
+                    Already have an account?
+                    <a href="/login.html">
+                        Login
+                    </a>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+    <footer class="footer">
+
+        <div class="footer-logo">
+            ✦ GLOW AI STUDIO 2027
+        </div>
 
         <p>
-            Your creative world is ready.
-            Choose a studio and bring your ideas to life.
+            Create. Imagine. Glow.
         </p>
 
-    </div>
-
-</section>
-
-
-<section class="account-overview">
-
-    <div class="overview-card">
-
-        <div class="overview-icon">💎</div>
-
-        <div class="overview-content">
-            <span>CURRENT PLAN</span>
-            <strong id="planName">GLOW FREE</strong>
-            <small id="planDescription">
-                Your current creative plan
-            </small>
+        <div class="footer-links">
+            <a href="#home">Home</a>
+            <a href="#studios">Studios</a>
+            <a href="#features">Features</a>
+            <a href="/login.html">Login</a>
+            <a href="/signup.html">Sign Up</a>
         </div>
 
-    </div>
-
-
-    <div class="overview-card">
-
-        <div class="overview-icon">🖼️</div>
-
-        <div class="overview-content">
-            <span>AI PICTURES</span>
-            <strong id="imageUsage">0 / 5</strong>
-            <small>generations used</small>
+        <div class="copyright">
+            © 2027 GLOW AI STUDIO. All rights reserved.
         </div>
 
-    </div>
+    </footer>
 
 
-    <div class="overview-card">
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+    <script>
+        // Keep the landing page simple.
+        // Authentication happens through login.html
+        // and signup.html before dashboard access.
 
-        <div class="overview-icon">🎵</div>
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
 
-        <div class="overview-content">
-            <span>AI MUSIC</span>
-            <strong id="musicUsage">0 / 0</strong>
-            <small>generations used</small>
-        </div>
+            link.addEventListener("click", function(event) {
 
-    </div>
+                const target = document.querySelector(
+                    this.getAttribute("href")
+                );
 
+                if (target) {
+                    event.preventDefault();
 
-    <div class="overview-card">
+                    target.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
 
-        <div class="overview-icon">🎬</div>
+            });
 
-        <div class="overview-content">
-            <span>AI VIDEO</span>
-            <strong id="videoUsage">0 / 0</strong>
-            <small>generations used</small>
-        </div>
+        });
+    </script>
 
-    </div>
-
-</section>
-
-
-<section class="studio-section">
-
-    <div class="section-heading">
-
-        <div class="section-label">
-            GLOW CREATIVE ENGINES
-        </div>
-
-        <h2>Choose Your Studio</h2>
-
-        <p>
-            Turn your ideas into music, videos and images.
-        </p>
-
-    </div>
-
-
-    <div class="dashboard-studio-grid">
-
-        <article class="dashboard-studio-card music-studio">
-
-            <div class="studio-glow"></div>
-
-            <div class="dashboard-card-icon">🎵</div>
-
-            <div class="studio-label">GLOW MUSIC</div>
-
-            <h3>AI Music Studio</h3>
-
-            <p>
-                Create original songs, vocals,
-                lyrics and professional AI music.
-            </p>
-
-            <div class="studio-features">
-                <span>✓ Original music</span>
-                <span>✓ Vocals & lyrics</span>
-                <span>✓ Afrobeat</span>
-                <span>✓ Amapiano</span>
-            </div>
-
-            <button
-                class="studio-action"
-                type="button"
-                onclick="openStudio('music')"
-            >
-                🎵 Create Music
-            </button>
-
-        </article>
-
-
-        <article class="dashboard-studio-card video-studio">
-
-            <div class="studio-glow"></div>
-
-            <div class="dashboard-card-icon">🎬</div>
-
-            <div class="studio-label">GLOW VIDEO</div>
-
-            <h3>AI Video Studio</h3>
-
-            <p>
-                Turn your stories and ideas into
-                cinematic AI-generated videos.
-            </p>
-
-            <div class="studio-features">
-                <span>✓ Cinematic scenes</span>
-                <span>✓ AI characters</span>
-                <span>✓ Music videos</span>
-                <span>✓ Story videos</span>
-            </div>
-
-            <button
-                class="studio-action"
-                type="button"
-                onclick="openStudio('video')"
-            >
-                🎬 Create Video
-            </button>
-
-        </article>
-
-
-        <article class="dashboard-studio-card image-studio">
-
-            <div class="studio-glow"></div>
-
-            <div class="dashboard-card-icon">🖼️</div>
-
-            <div class="studio-label">GLOW IMAGE</div>
-
-            <h3>AI Picture Studio</h3>
-
-            <p>
-                Generate beautiful AI pictures
-                from simple ideas and prompts.
-            </p>
-
-            <div class="studio-features">
-                <span>✓ AI image generation</span>
-                <span>✓ Creative artwork</span>
-                <span>✓ Portraits</span>
-                <span>✓ Cinematic images</span>
-            </div>
-
-            <button
-                class="studio-action"
-                type="button"
-                onclick="openStudio('image')"
-            >
-                🖼️ Create Image
-            </button>
-
-        </article>
-
-    </div>
-
-</section>
-
-
-<section class="creations-section">
-
-    <div class="section-heading creations-heading">
-
-        <div>
-            <div class="section-label">
-                YOUR CREATIVE LIBRARY
-            </div>
-
-            <h2>My Creations</h2>
-
-            <p>
-                Your generated music, videos and images.
-            </p>
-        </div>
-
-        <button
-            class="refresh-btn"
-            type="button"
-            onclick="loadCreations()"
-        >
-            ↻ Refresh
-        </button>
-
-    </div>
-
-    <div class="creations-grid" id="creationsList">
-
-        <div class="empty-creations">
-
-            <div class="empty-icon">✨</div>
-
-            <h3>Your creative library is empty</h3>
-
-            <p>
-                Create your first AI masterpiece
-                and it will appear here.
-            </p>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<section class="profile-section">
-
-    <div class="section-heading">
-
-        <div class="section-label">YOUR ACCOUNT</div>
-
-        <h2>Account & Profile</h2>
-
-    </div>
-
-
-    <div class="profile-card">
-
-        <div class="profile-avatar" id="profileAvatar">
-            ✨
-        </div>
-
-        <div class="profile-details">
-
-            <h3 id="profileUsername">Loading...</h3>
-
-            <p id="profileEmail">Loading...</p>
-
-            <span class="profile-plan" id="profilePlan">
-                GLOW FREE
-            </span>
-
-        </div>
-
-        <button
-            class="profile-btn"
-            type="button"
-            onclick="openAccount()"
-        >
-            Manage Account
-        </button>
-
-    </div>
-
-</section>
-
-</main><div class="modal" id="studioModal"><div class="modal-box">
-
-    <button
-        class="close-btn"
-        type="button"
-        onclick="closeModal('studioModal')"
-    >
-        ×
-    </button>
-
-    <div id="studioModalTitle"></div>
-
-    <div id="studioModalContent"></div>
-
-</div>
-
-</div><div class="modal" id="accountModal"><div class="modal-box">
-
-    <button
-        class="close-btn"
-        type="button"
-        onclick="closeModal('accountModal')"
-    >
-        ×
-    </button>
-
-    <div id="accountModalContent">
-
-        <div class="studio-modal-header">
-
-            <div class="studio-modal-badge">
-                GLOW ACCOUNT
-            </div>
-
-            <h2>Account</h2>
-
-            <p>
-                Manage your GLOW account and profile.
-            </p>
-
-        </div>
-
-    </div>
-
-</div>
-
-</div><footer><div class="footer-logo">
-    ✨ GLOW AI STUDIO 2027
-</div>
-
-<p>Create. Imagine. Glow.</p>
-
-<small>
-    © 2027 GLOW AI STUDIO. All rights reserved.
-</small>
-
-</footer><script src="/app.js"></script><script>
-
-let dashboardReady = false;
-
-
-/* =====================================================
-   LOAD USER
-===================================================== */
-
-async function loadDashboardData() {
-
-    try {
-
-        const response = await fetch(
-            "/api/auth/me",
-            {
-                method: "GET",
-                credentials: "include",
-                cache: "no-store"
-            }
-        );
-
-        const data = await response.json();
-
-        /*
-         * IMPORTANT:
-         * Never redirect to home because of a temporary
-         * JavaScript/API problem.
-         */
-
-        if (!response.ok || !data.authenticated) {
-
-            console.warn(
-                "Dashboard authentication failed.",
-                data
-            );
-
-            window.location.replace("/login.html");
-
-            return;
-        }
-
-
-        const user = data.user || {};
-        const usage = data.usage || {};
-
-        const username =
-            user.profile_name ||
-            user.username ||
-            "Creator";
-
-
-        document.getElementById(
-            "welcomeUsername"
-        ).textContent = username;
-
-
-        document.getElementById(
-            "headerUsername"
-        ).textContent =
-            user.username || username;
-
-
-        document.getElementById(
-            "profileUsername"
-        ).textContent = username;
-
-
-        document.getElementById(
-            "profileEmail"
-        ).textContent =
-            user.email || "";
-
-
-        const plan =
-            usage.plan ||
-            user.plan ||
-            "free";
-
-
-        const planUpper =
-            plan.toUpperCase();
-
-
-        document.getElementById(
-            "headerPlan"
-        ).textContent =
-            "GLOW " + planUpper;
-
-
-        document.getElementById(
-            "planName"
-        ).textContent =
-            "GLOW " + planUpper;
-
-
-        document.getElementById(
-            "profilePlan"
-        ).textContent =
-            "GLOW " + planUpper;
-
-
-        const image =
-            usage.image || {};
-
-        const music =
-            usage.music || {};
-
-        const video =
-            usage.video || {};
-
-
-        document.getElementById(
-            "imageUsage"
-        ).textContent =
-            `${image.used || 0} / ${image.limit || 0}`;
-
-
-        document.getElementById(
-            "musicUsage"
-        ).textContent =
-            `${music.used || 0} / ${music.limit || 0}`;
-
-
-        document.getElementById(
-            "videoUsage"
-        ).textContent =
-            `${video.used || 0} / ${video.limit || 0}`;
-
-
-        if (user.profile_photo) {
-
-            const photo =
-                document.createElement("img");
-
-            photo.src = user.profile_photo;
-            photo.alt = "Profile";
-
-            document.getElementById(
-                "userAvatar"
-            ).replaceChildren(photo);
-
-
-            const photo2 =
-                document.createElement("img");
-
-            photo2.src = user.profile_photo;
-            photo2.alt = "Profile";
-
-            document.getElementById(
-                "profileAvatar"
-            ).replaceChildren(photo2);
-
-        }
-
-
-        dashboardReady = true;
-
-
-        if (
-            typeof loadCreations === "function"
-        ) {
-            loadCreations();
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Dashboard error:",
-            error
-        );
-
-        /*
-         * Do NOT send the user home.
-         * Send them to login only when the session
-         * genuinely cannot be verified.
-         */
-
-        window.location.replace(
-            "/login.html"
-        );
-    }
-}
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    loadDashboardData
-);
-
-</script></body>
-        </html>
+</body>
+    </html>
