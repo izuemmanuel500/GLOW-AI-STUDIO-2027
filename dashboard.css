@@ -1234,3 +1234,163 @@ footer small {
         font-size: 10px;
     }
     }
+/* =========================================================
+   GLOW AI STUDIO — APP.JS COMPATIBILITY FIX
+========================================================= */
+
+.modal.show {
+    display: flex;
+}
+
+#studioModalContent,
+#accountModalContent {
+    position: relative;
+    z-index: 5005;
+    color: #ffffff;
+}
+
+#studioModalContent .generation-form,
+#accountModalContent .generation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#studioModalContent label,
+#accountModalContent label {
+    display: block;
+    margin-top: 8px;
+    color: #cfcfe0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#studioModalContent textarea,
+#studioModalContent input,
+#studioModalContent select,
+#accountModalContent textarea,
+#accountModalContent input,
+#accountModalContent select {
+    width: 100%;
+    padding: 14px 15px;
+
+    color: #ffffff;
+
+    background: #151522;
+
+    border: 1px solid rgba(255,255,255,0.12);
+
+    border-radius: 13px;
+
+    outline: none;
+
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#studioModalContent textarea {
+    min-height: 130px;
+    resize: vertical;
+}
+
+#studioModalContent textarea:focus,
+#studioModalContent input:focus,
+#studioModalContent select:focus,
+#accountModalContent input:focus {
+    border-color: #8b5cf6;
+
+    box-shadow:
+        0 0 0 3px rgba(139,92,246,0.12);
+}
+
+#studioModalContent option,
+#accountModalContent option {
+    background: #101018;
+    color: #ffffff;
+}
+
+#studioModalContent .primary-btn,
+#studioModalContent .secondary-btn,
+#accountModalContent .primary-btn,
+#accountModalContent .secondary-btn {
+    position: relative;
+    z-index: 5100;
+
+    pointer-events: auto;
+
+    margin-top: 12px;
+}
+
+#studioModalContent .primary-btn {
+    width: 100%;
+
+    padding: 15px;
+
+    border: none;
+    border-radius: 13px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #ec4899
+        );
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+#studioModalContent .secondary-btn {
+    width: 100%;
+
+    padding: 13px;
+
+    border-radius: 13px;
+
+    color: #ffffff;
+
+    background: rgba(255,255,255,0.06);
+
+    border:
+        1px solid rgba(255,255,255,0.12);
+
+    cursor: pointer;
+}
+
+#studioModalContent .primary-btn:hover,
+#studioModalContent .secondary-btn:hover {
+    transform: translateY(-1px);
+}
+
+#studioModalContent .generation-result img,
+#studioModalContent .generation-result video {
+    display: block;
+
+    width: 100%;
+
+    max-height: 500px;
+
+    object-fit: contain;
+
+    border-radius: 18px;
+
+    background: #05050a;
+}
+
+#studioModalContent .generation-result audio {
+    width: 100%;
+    margin-top: 20px;
+}
+
+#studioModalContent a {
+    pointer-events: auto;
+}
+
+#studioModalContent button,
+#accountModalContent button {
+    pointer-events: auto;
+    position: relative;
+    z-index: 5200;
+   }
