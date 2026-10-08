@@ -131,43 +131,83 @@
                 .value;
 
             try {
-
                 const response = await fetch("/api/auth/signup", {
                     method: "POST",
+
                     credentials: "include",
+
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
                     },
+
                     body: JSON.stringify({
-                        username,
-                        email,
-                        password
+                        username: username,
+                        email: email,
+                        password: password
                     })
                 });
 
-                const data = await response.json();
+                /*
+                 * Read the response as text first.
+                 * This prevents:
+                 * "Unexpected end of JSON input"
+                 */
+                const rawResponse = await response.text();
 
+                let data = {};
+
+                if (rawResponse.trim()) {
+                    try {
+                        data = JSON.parse(rawResponse);
+                    } catch (jsonError) {
+                        console.error(
+                            "Server returned invalid JSON:",
+                            rawResponse
+                        );
+
+                        throw new Error(
+                            "The server returned an unexpected response. Please try again."
+                        );
+                    }
+                }
+
+                /*
+                 * Handle server errors.
+                 */
                 if (!response.ok) {
                     throw new Error(
                         data.error ||
                         data.message ||
-                        "Unable to create account."
+                        `Unable to create account. Server returned ${response.status}.`
                     );
                 }
 
+                /*
+                 * Successful signup.
+                 *
+                 * Your Flask backend already creates the session,
+                 * so the user can go directly to the dashboard.
+                 */
                 signupMessage.textContent =
+                    data.message ||
                     "Account created successfully. Opening your dashboard...";
 
                 signupMessage.classList.add("success");
 
-                setTimeout(() => {
+                signupButton.textContent = "Account Created ✓";
+
+                setTimeout(function() {
                     window.location.href = "/dashboard.html";
-                }, 700);
+                }, 800);
 
             } catch (error) {
 
+                console.error("Signup error:", error);
+
                 signupMessage.textContent =
-                    error.message || "Something went wrong.";
+                    error.message ||
+                    "Something went wrong. Please try again.";
 
                 signupMessage.classList.add("error");
 
@@ -178,4 +218,4 @@
     </script>
 
 </body>
-</html>
+    </html>
