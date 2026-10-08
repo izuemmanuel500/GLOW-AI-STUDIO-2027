@@ -155,3 +155,96 @@ nav a:hover {
 .primary-btn,
 .btn-primary {
     background: linear-gradient(135deg, #9b42ff, #ff2da9
+/* ============================================================
+   GLOW AUTH PAGE — SPACING FIX
+   Keeps existing design, only adds breathing room
+   ============================================================ */
+
+.auth-container,
+.auth-card,
+.login-card,
+.signup-card {
+    gap: 22px;
+}
+
+.auth-logo,
+.auth-header,
+.login-header,
+.signup-header {
+    margin-bottom: 28px;
+}
+
+.auth-form,
+.login-form,
+.signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.auth-form .form-group,
+.login-form .form-group,
+.signup-form .form-group {
+    margin-bottom: 0;
+}
+
+.auth-form label,
+.login-form label,
+.signup-form label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.auth-form input,
+.login-form input,
+.signup-form input {
+    margin-bottom: 0;
+}
+
+.auth-form button,
+.login-form button,
+.signup-form button {
+    margin-top: 8px;
+}
+
+.auth-footer,
+.login-footer,
+.signup-footer {
+    margin-top: 20px;
+}
+
+/* Mobile spacing */
+@media (max-width: 600px) {
+
+    .auth-container,
+    .auth-card,
+    .login-card,
+    .signup-card {
+        gap: 18px;
+    }
+
+    .auth-logo,
+    .auth-header,
+    .login-header,
+    .signup-header {
+        margin-bottom: 24px;
+    }
+
+    .auth-form,
+    .login-form,
+    .signup-form {
+        gap: 16px;
+    }
+
+    .auth-form label,
+    .login-form label,
+    .signup-form label {
+        margin-bottom: 7px;
+    }
+
+    .auth-form button,
+    .login-form button,
+    .signup-form button {
+        margin-top: 6px;
+    }
+   }
