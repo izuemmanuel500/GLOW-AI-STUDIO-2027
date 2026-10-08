@@ -17,10 +17,6 @@
 
 <body>
 
-<!-- =====================================================
-     HEADER
-===================================================== -->
-
 <header class="dashboard-header">
 
     <div class="brand">
@@ -60,13 +56,7 @@
 </header>
 
 
-<!-- =====================================================
-     MAIN
-===================================================== -->
-
 <main class="dashboard">
-
-    <!-- WELCOME -->
 
     <section class="welcome-section">
 
@@ -91,10 +81,6 @@
     </section>
 
 
-    <!-- =================================================
-         OVERVIEW
-    ================================================== -->
-
     <section class="account-overview">
 
         <div class="overview-card">
@@ -102,6 +88,7 @@
             <div class="overview-icon">💎</div>
 
             <div class="overview-content">
+
                 <span>CURRENT PLAN</span>
 
                 <strong id="planName">
@@ -111,6 +98,7 @@
                 <small id="planDescription">
                     Your current creative plan
                 </small>
+
             </div>
 
         </div>
@@ -121,6 +109,7 @@
             <div class="overview-icon">🖼️</div>
 
             <div class="overview-content">
+
                 <span>AI PICTURES</span>
 
                 <strong id="imageUsage">
@@ -130,6 +119,7 @@
                 <small>
                     generations used
                 </small>
+
             </div>
 
         </div>
@@ -140,6 +130,7 @@
             <div class="overview-icon">🎵</div>
 
             <div class="overview-content">
+
                 <span>AI MUSIC</span>
 
                 <strong id="musicUsage">
@@ -149,6 +140,7 @@
                 <small>
                     generations used
                 </small>
+
             </div>
 
         </div>
@@ -159,6 +151,7 @@
             <div class="overview-icon">🎬</div>
 
             <div class="overview-content">
+
                 <span>AI VIDEO</span>
 
                 <strong id="videoUsage">
@@ -168,16 +161,13 @@
                 <small>
                     generations used
                 </small>
+
             </div>
 
         </div>
 
     </section>
 
-
-    <!-- =================================================
-         STUDIOS
-    ================================================== -->
 
     <section class="studio-section">
 
@@ -200,8 +190,6 @@
 
         <div class="dashboard-studio-grid">
 
-
-            <!-- MUSIC -->
 
             <article class="dashboard-studio-card music-studio">
 
@@ -242,8 +230,6 @@
             </article>
 
 
-            <!-- VIDEO -->
-
             <article class="dashboard-studio-card video-studio">
 
                 <div class="studio-glow"></div>
@@ -282,8 +268,6 @@
 
             </article>
 
-
-            <!-- IMAGE -->
 
             <article class="dashboard-studio-card image-studio">
 
@@ -327,10 +311,6 @@
 
     </section>
 
-
-    <!-- =================================================
-         CREATIONS
-    ================================================== -->
 
     <section class="creations-section">
 
@@ -388,10 +368,6 @@
 
     </section>
 
-
-    <!-- =================================================
-         ACCOUNT
-    ================================================== -->
 
     <section class="profile-section">
 
@@ -451,10 +427,6 @@
 </main>
 
 
-<!-- =====================================================
-     STUDIO MODAL
-===================================================== -->
-
 <div
     class="modal"
     id="studioModal"
@@ -479,10 +451,6 @@
 
 </div>
 
-
-<!-- =====================================================
-     ACCOUNT MODAL
-===================================================== -->
 
 <div
     class="modal"
@@ -520,33 +488,18 @@
 
             <div class="account-information">
 
-                <p>
-                    <strong>Username</strong>
-                </p>
-
-                <p id="accountUsername">
-                    Creator
-                </p>
+                <p><strong>Username</strong></p>
+                <p id="accountUsername">Creator</p>
 
                 <br>
 
-                <p>
-                    <strong>Email</strong>
-                </p>
-
-                <p id="accountEmail">
-                    Loading...
-                </p>
+                <p><strong>Email</strong></p>
+                <p id="accountEmail">Loading...</p>
 
                 <br>
 
-                <p>
-                    <strong>Plan</strong>
-                </p>
-
-                <p id="accountPlan">
-                    GLOW FREE
-                </p>
+                <p><strong>Plan</strong></p>
+                <p id="accountPlan">GLOW FREE</p>
 
             </div>
 
@@ -556,10 +509,6 @@
 
 </div>
 
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
 
 <footer>
 
@@ -578,18 +527,10 @@
 </footer>
 
 
-<!-- =====================================================
-     DIRECT DASHBOARD JAVASCRIPT
-===================================================== -->
-
 <script>
 
 "use strict";
 
-
-/* =====================================================
-   HELPERS
-===================================================== */
 
 function byId(id) {
     return document.getElementById(id);
@@ -627,15 +568,15 @@ function showGenerationMessage(message, type) {
     box.style.fontSize = "14px";
     box.style.lineHeight = "1.5";
 
-    if (type === "error") {
-        box.style.color = "#ff8b9d";
-    } else {
-        box.style.color = "#ffffff";
-    }
+    box.style.color =
+        type === "error"
+            ? "#ff8b9d"
+            : "#ffffff";
 
     box.textContent = message;
 
-    const content = byId("studioModalContent");
+    const content =
+        byId("studioModalContent");
 
     if (content) {
         content.appendChild(box);
@@ -647,11 +588,12 @@ function setButtonLoading(button, loadingText) {
 
     if (!button) return;
 
-    button.dataset.originalText =
-        button.innerHTML;
+    if (!button.dataset.originalText) {
+        button.dataset.originalText =
+            button.innerHTML;
+    }
 
     button.disabled = true;
-
     button.innerHTML =
         loadingText || "✨ Creating...";
 }
@@ -669,10 +611,6 @@ function restoreButton(button) {
 }
 
 
-/* =====================================================
-   API ERROR
-===================================================== */
-
 async function getApiError(response) {
 
     try {
@@ -683,20 +621,18 @@ async function getApiError(response) {
         return (
             data.error ||
             data.message ||
-            "Something went wrong."
+            `Server returned ${response.status}`
         );
 
     } catch (error) {
 
-        return (
-            "Server error. Please try again."
-        );
+        return `Server returned ${response.status}`;
     }
 }
 
 
 /* =====================================================
-   REFRESH USER
+   USER
 ===================================================== */
 
 async function refreshGlowUserData() {
@@ -712,9 +648,7 @@ async function refreshGlowUserData() {
                 }
             );
 
-        if (!response.ok) {
-            return;
-        }
+        if (!response.ok) return;
 
         const data =
             await response.json();
@@ -743,105 +677,89 @@ async function refreshGlowUserData() {
             "GLOW FREE";
 
 
-        if (byId("headerUsername")) {
+        if (byId("headerUsername"))
             byId("headerUsername").textContent =
                 username;
-        }
 
-        if (byId("welcomeUsername")) {
+        if (byId("welcomeUsername"))
             byId("welcomeUsername").textContent =
                 username;
-        }
 
-        if (byId("profileUsername")) {
+        if (byId("profileUsername"))
             byId("profileUsername").textContent =
                 username;
-        }
 
-        if (byId("profileEmail")) {
+        if (byId("profileEmail"))
             byId("profileEmail").textContent =
                 email;
-        }
 
-        if (byId("accountUsername")) {
+        if (byId("accountUsername"))
             byId("accountUsername").textContent =
                 username;
-        }
 
-        if (byId("accountEmail")) {
+        if (byId("accountEmail"))
             byId("accountEmail").textContent =
                 email;
-        }
 
-        if (byId("headerPlan")) {
+        if (byId("headerPlan"))
             byId("headerPlan").textContent =
                 plan;
-        }
 
-        if (byId("planName")) {
+        if (byId("planName"))
             byId("planName").textContent =
                 plan;
-        }
 
-        if (byId("profilePlan")) {
+        if (byId("profilePlan"))
             byId("profilePlan").textContent =
                 plan;
-        }
 
-        if (byId("accountPlan")) {
+        if (byId("accountPlan"))
             byId("accountPlan").textContent =
                 plan;
-        }
 
 
-        if (
-            data.usage &&
-            data.usage.image &&
-            byId("imageUsage")
-        ) {
+        if (data.usage) {
 
-            byId("imageUsage").textContent =
-                `${data.usage.image.used || 0} / ${data.usage.image.limit || 0}`;
+            if (
+                data.usage.image &&
+                byId("imageUsage")
+            ) {
 
-        }
+                byId("imageUsage").textContent =
+                    `${data.usage.image.used || 0} / ${data.usage.image.limit || 0}`;
+            }
 
+            if (
+                data.usage.music &&
+                byId("musicUsage")
+            ) {
 
-        if (
-            data.usage &&
-            data.usage.music &&
-            byId("musicUsage")
-        ) {
+                byId("musicUsage").textContent =
+                    `${data.usage.music.used || 0} / ${data.usage.music.limit || 0}`;
+            }
 
-            byId("musicUsage").textContent =
-                `${data.usage.music.used || 0} / ${data.usage.music.limit || 0}`;
+            if (
+                data.usage.video &&
+                byId("videoUsage")
+            ) {
 
-        }
-
-
-        if (
-            data.usage &&
-            data.usage.video &&
-            byId("videoUsage")
-        ) {
-
-            byId("videoUsage").textContent =
-                `${data.usage.video.used || 0} / ${data.usage.video.limit || 0}`;
-
+                byId("videoUsage").textContent =
+                    `${data.usage.video.used || 0} / ${data.usage.video.limit || 0}`;
+            }
         }
 
     } catch (error) {
 
-        console.log(
+        console.error(
             "User refresh error:",
             error
         );
-
     }
 }
 
 
 /* =====================================================
-   STUDIO OPEN
+   OPEN STUDIO
 ===================================================== */
 
 function openGlowStudio(type) {
@@ -869,10 +787,6 @@ function openGlowStudio(type) {
     content.innerHTML = "";
 
 
-    /* =================================================
-       MUSIC
-    ================================================= */
-
     if (type === "music") {
 
         title.innerHTML = `
@@ -883,9 +797,7 @@ function openGlowStudio(type) {
                     GLOW MUSIC
                 </div>
 
-                <h2>
-                    🎵 Create Music
-                </h2>
+                <h2>🎵 Create Music</h2>
 
                 <p>
                     Describe the music you want GLOW to create.
@@ -909,90 +821,45 @@ function openGlowStudio(type) {
 
                 <textarea
                     id="musicPrompt"
-                    placeholder="Example: An energetic Afrobeats song about success, money and believing in yourself..."
+                    placeholder="Example: An energetic Afrobeats song about success..."
                     required
                 ></textarea>
 
 
-                <label>
-                    Genre
-                </label>
+                <label>Genre</label>
 
                 <select id="musicGenre">
 
-                    <option value="Afrobeats">
-                        Afrobeats
-                    </option>
-
-                    <option value="Amapiano">
-                        Amapiano
-                    </option>
-
-                    <option value="Pop">
-                        Pop
-                    </option>
-
-                    <option value="Hip Hop">
-                        Hip Hop
-                    </option>
-
-                    <option value="R&B">
-                        R&B
-                    </option>
-
-                    <option value="Gospel">
-                        Gospel
-                    </option>
+                    <option value="Afrobeats">Afrobeats</option>
+                    <option value="Amapiano">Amapiano</option>
+                    <option value="Pop">Pop</option>
+                    <option value="Hip Hop">Hip Hop</option>
+                    <option value="R&B">R&B</option>
+                    <option value="Gospel">Gospel</option>
 
                 </select>
 
 
-                <label>
-                    Mood
-                </label>
+                <label>Mood</label>
 
                 <select id="musicMood">
 
-                    <option value="Energetic">
-                        Energetic
-                    </option>
-
-                    <option value="Happy">
-                        Happy
-                    </option>
-
-                    <option value="Emotional">
-                        Emotional
-                    </option>
-
-                    <option value="Romantic">
-                        Romantic
-                    </option>
-
-                    <option value="Chill">
-                        Chill
-                    </option>
+                    <option value="Energetic">Energetic</option>
+                    <option value="Happy">Happy</option>
+                    <option value="Emotional">Emotional</option>
+                    <option value="Romantic">Romantic</option>
+                    <option value="Chill">Chill</option>
 
                 </select>
 
 
-                <label>
-                    Duration
-                </label>
+                <label>Duration</label>
 
                 <select id="musicDuration">
 
-                    <option value="30">
-                        30 seconds
-                    </option>
-
-                    <option value="60">
-                        60 seconds
-                    </option>
-
-                    <option value="120">
-                        2 minutes
-                    </option>
+                    <option value="30">30 seconds</option>
+                    <option value="60">60 seconds</option>
+                    <option value="120">2 minutes</option>
 
                 </select>
 
@@ -1018,10 +885,6 @@ function openGlowStudio(type) {
     }
 
 
-    /* =================================================
-       VIDEO
-    ================================================= */
-
     else if (type === "video") {
 
         title.innerHTML = `
@@ -1032,9 +895,7 @@ function openGlowStudio(type) {
                     GLOW VIDEO
                 </div>
 
-                <h2>
-                    🎬 Create Video
-                </h2>
+                <h2>🎬 Create Video</h2>
 
                 <p>
                     Describe the video you want GLOW to create.
@@ -1058,7 +919,7 @@ function openGlowStudio(type) {
 
                 <textarea
                     id="videoPrompt"
-                    placeholder="Example: A futuristic Lagos city at night with glowing buildings, cars and cinematic camera movement..."
+                    placeholder="Example: A futuristic Lagos city at night with glowing buildings..."
                     required
                 ></textarea>
 
@@ -1069,21 +930,10 @@ function openGlowStudio(type) {
 
                 <select id="videoDuration">
 
-                    <option value="5">
-                        5 seconds
-                    </option>
-
-                    <option value="10">
-                        10 seconds
-                    </option>
-
-                    <option value="15">
-                        15 seconds
-                    </option>
-
-                    <option value="30">
-                        30 seconds
-                    </option>
+                    <option value="5">5 seconds</option>
+                    <option value="10">10 seconds</option>
+                    <option value="15">15 seconds</option>
+                    <option value="30">30 seconds</option>
 
                 </select>
 
@@ -1109,10 +959,6 @@ function openGlowStudio(type) {
     }
 
 
-    /* =================================================
-       IMAGE
-    ================================================= */
-
     else if (type === "image") {
 
         title.innerHTML = `
@@ -1123,12 +969,10 @@ function openGlowStudio(type) {
                     GLOW IMAGE
                 </div>
 
-                <h2>
-                    🖼️ Create Image
-                </h2>
+                <h2>🖼️ Create Image</h2>
 
                 <p>
-                    Generate a new picture or transform a picture from your phone.
+                    Generate a new picture or transform a picture.
                 </p>
 
             </div>
@@ -1149,7 +993,6 @@ function openGlowStudio(type) {
 
                 <button
                     type="button"
-                    id="imageGenerateTab"
                     class="studio-action"
                     onclick="showGlowImageGenerate()"
                 >
@@ -1158,7 +1001,6 @@ function openGlowStudio(type) {
 
                 <button
                     type="button"
-                    id="imageEditTab"
                     class="studio-action"
                     onclick="showGlowImageEdit()"
                 >
@@ -1167,19 +1009,16 @@ function openGlowStudio(type) {
 
             </div>
 
-
             <div id="imageStudioArea"></div>
 
         `;
 
 
         showGlowImageGenerate();
-
     }
 
 
-    modal.style.display =
-        "flex";
+    modal.style.display = "flex";
 
     modal.setAttribute(
         "aria-hidden",
@@ -1192,7 +1031,30 @@ function openGlowStudio(type) {
 
 
 /* =====================================================
-   IMAGE GENERATE TAB
+   CLOSE STUDIO
+===================================================== */
+
+function closeGlowStudio() {
+
+    const modal =
+        byId("studioModal");
+
+    if (!modal) return;
+
+    modal.style.display = "none";
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    document.body.style.overflow =
+        "";
+}
+
+
+/* =====================================================
+   IMAGE GENERATE
 ===================================================== */
 
 function showGlowImageGenerate() {
@@ -1216,7 +1078,7 @@ function showGlowImageGenerate() {
 
             <textarea
                 id="imagePrompt"
-                placeholder="Example: A cinematic portrait of a young African artist standing in Lagos at sunset..."
+                placeholder="Example: A cinematic portrait of a young African artist in Lagos at sunset..."
                 required
             ></textarea>
 
@@ -1227,17 +1089,9 @@ function showGlowImageGenerate() {
 
             <select id="imageSize">
 
-                <option value="square">
-                    Square
-                </option>
-
-                <option value="landscape">
-                    Landscape
-                </option>
-
-                <option value="portrait">
-                    Portrait
-                </option>
+                <option value="square">Square</option>
+                <option value="landscape">Landscape</option>
+                <option value="portrait">Portrait</option>
 
             </select>
 
@@ -1263,7 +1117,7 @@ function showGlowImageGenerate() {
 
 
 /* =====================================================
-   IMAGE EDIT TAB
+   IMAGE EDIT
 ===================================================== */
 
 function showGlowImageEdit() {
@@ -1282,7 +1136,7 @@ function showGlowImageEdit() {
         >
 
             <label>
-                Upload a picture from your phone
+                Upload a picture
             </label>
 
             <input
@@ -1323,7 +1177,7 @@ function showGlowImageEdit() {
 
             <textarea
                 id="editImagePrompt"
-                placeholder="Example: Change the background to a futuristic Lagos skyline and make the lighting cinematic..."
+                placeholder="Example: Change the background to a futuristic Lagos skyline..."
                 required
             ></textarea>
 
@@ -1368,9 +1222,7 @@ function showGlowImageEdit() {
             }
 
 
-            if (
-                !file.type.startsWith("image/")
-            ) {
+            if (!file.type.startsWith("image/")) {
 
                 alert(
                     "Please select an image file."
@@ -1415,22 +1267,22 @@ function showGlowImageEdit() {
 
 
 /* =====================================================
-   GENERATE MUSIC
+   MUSIC GENERATION
 ===================================================== */
 
 async function generateGlowMusic(event) {
 
     event.preventDefault();
 
-
     const form =
         byId("musicCreationForm");
+
+    if (!form) return;
 
     const button =
         form.querySelector(
             "button[type='submit']"
         );
-
 
     const prompt =
         byId("musicPrompt").value.trim();
@@ -1464,7 +1316,7 @@ async function generateGlowMusic(event) {
 
 
     showGenerationMessage(
-        "🎵 GLOW is creating your music. Please wait...",
+        "🎵 GLOW is creating your music...",
         "loading"
     );
 
@@ -1476,7 +1328,6 @@ async function generateGlowMusic(event) {
                 "/api/music",
                 {
                     method: "POST",
-
                     credentials: "include",
 
                     headers: {
@@ -1485,15 +1336,10 @@ async function generateGlowMusic(event) {
                     },
 
                     body: JSON.stringify({
-
-                        prompt: prompt,
-
-                        genre: genre,
-
-                        mood: mood,
-
-                        duration: duration
-
+                        prompt,
+                        genre,
+                        mood,
+                        duration
                     })
                 }
             );
@@ -1501,10 +1347,9 @@ async function generateGlowMusic(event) {
 
         if (!response.ok) {
 
-            const message =
-                await getApiError(response);
-
-            throw new Error(message);
+            throw new Error(
+                await getApiError(response)
+            );
         }
 
 
@@ -1515,13 +1360,14 @@ async function generateGlowMusic(event) {
         if (!data.request_id) {
 
             throw new Error(
+                data.message ||
                 "Music generation request was not created."
             );
         }
 
 
         showGenerationMessage(
-            "🎵 Music generation started. GLOW is waiting for the AI result...",
+            "🎵 Music generation started...",
             "loading"
         );
 
@@ -1549,30 +1395,28 @@ async function generateGlowMusic(event) {
 
         await refreshGlowUserData();
 
-        await refreshGlowCreations(
-            false
-        );
+        await refreshGlowCreations(false);
     }
 }
 
 
 /* =====================================================
-   GENERATE VIDEO
+   VIDEO GENERATION
 ===================================================== */
 
 async function generateGlowVideo(event) {
 
     event.preventDefault();
 
-
     const form =
         byId("videoCreationForm");
+
+    if (!form) return;
 
     const button =
         form.querySelector(
             "button[type='submit']"
         );
-
 
     const prompt =
         byId("videoPrompt").value.trim();
@@ -1600,7 +1444,7 @@ async function generateGlowVideo(event) {
 
 
     showGenerationMessage(
-        `🎬 GLOW is creating your ${duration}-second video. Please wait...`,
+        "🎬 GLOW is creating your video...",
         "loading"
     );
 
@@ -1612,7 +1456,6 @@ async function generateGlowVideo(event) {
                 "/api/video",
                 {
                     method: "POST",
-
                     credentials: "include",
 
                     headers: {
@@ -1621,11 +1464,8 @@ async function generateGlowVideo(event) {
                     },
 
                     body: JSON.stringify({
-
-                        prompt: prompt,
-
-                        duration: duration
-
+                        prompt,
+                        duration
                     })
                 }
             );
@@ -1633,10 +1473,9 @@ async function generateGlowVideo(event) {
 
         if (!response.ok) {
 
-            const message =
-                await getApiError(response);
-
-            throw new Error(message);
+            throw new Error(
+                await getApiError(response)
+            );
         }
 
 
@@ -1647,13 +1486,14 @@ async function generateGlowVideo(event) {
         if (!data.request_id) {
 
             throw new Error(
+                data.message ||
                 "Video generation request was not created."
             );
         }
 
 
         showGenerationMessage(
-            "🎬 Video generation started. This can take some time...",
+            "🎬 Video generation started...",
             "loading"
         );
 
@@ -1681,30 +1521,28 @@ async function generateGlowVideo(event) {
 
         await refreshGlowUserData();
 
-        await refreshGlowCreations(
-            false
-        );
+        await refreshGlowCreations(false);
     }
 }
 
 
 /* =====================================================
-   GENERATE IMAGE
+   IMAGE GENERATION
 ===================================================== */
 
 async function generateGlowImage(event) {
 
     event.preventDefault();
 
-
     const form =
         byId("imageCreationForm");
+
+    if (!form) return;
 
     const button =
         form.querySelector(
             "button[type='submit']"
         );
-
 
     const prompt =
         byId("imagePrompt").value.trim();
@@ -1730,7 +1568,7 @@ async function generateGlowImage(event) {
 
 
     showGenerationMessage(
-        "🖼️ GLOW is creating your image. Please wait...",
+        "🖼️ GLOW is creating your image...",
         "loading"
     );
 
@@ -1742,7 +1580,6 @@ async function generateGlowImage(event) {
                 "/api/image",
                 {
                     method: "POST",
-
                     credentials: "include",
 
                     headers: {
@@ -1751,11 +1588,8 @@ async function generateGlowImage(event) {
                     },
 
                     body: JSON.stringify({
-
-                        prompt: prompt,
-
+                        prompt,
                         image_size: imageSize
-
                     })
                 }
             );
@@ -1763,10 +1597,9 @@ async function generateGlowImage(event) {
 
         if (!response.ok) {
 
-            const message =
-                await getApiError(response);
-
-            throw new Error(message);
+            throw new Error(
+                await getApiError(response)
+            );
         }
 
 
@@ -1777,6 +1610,7 @@ async function generateGlowImage(event) {
         if (!data.request_id) {
 
             throw new Error(
+                data.message ||
                 "Image generation request was not created."
             );
         }
@@ -1794,3 +1628,28 @@ async function generateGlowImage(event) {
 
 
     } catch (error) {
+
+        console.error(
+            "Image generation error:",
+            error
+        );
+
+        showGenerationMessage(
+            "❌ " + error.message,
+            "error"
+        );
+
+    } finally {
+
+        restoreButton(button);
+
+        await refreshGlowUserData();
+
+        await refreshGlowCreations(false);
+    }
+}
+
+
+/* =====================================================
+   IMAGE EDIT
+===================================================== */
