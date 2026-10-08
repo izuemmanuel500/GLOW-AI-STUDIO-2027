@@ -39,7 +39,9 @@
             <form id="loginForm">
 
                 <div class="form-group">
-                    <label for="loginUsername">Username or Email</label>
+                    <label for="loginUsername">
+                        Username or Email
+                    </label>
 
                     <input
                         type="text"
@@ -52,7 +54,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="loginPassword">Password</label>
+                    <label for="loginPassword">
+                        Password
+                    </label>
 
                     <input
                         type="password"
@@ -94,14 +98,16 @@
         const loginMessage = document.getElementById("loginMessage");
 
         loginForm.addEventListener("submit", async function(event) {
+
             event.preventDefault();
 
             loginButton.disabled = true;
             loginButton.textContent = "Logging In...";
+
             loginMessage.textContent = "";
             loginMessage.className = "auth-message";
 
-            const username = document
+            const identifier = document
                 .getElementById("loginUsername")
                 .value
                 .trim();
@@ -114,47 +120,34 @@
 
                 const response = await fetch("/api/auth/login", {
                     method: "POST",
+
                     credentials: "include",
+
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
                     },
+
                     body: JSON.stringify({
-                        username,
-                        password
+                        identifier: identifier,
+                        password: password
                     })
                 });
 
-                const data = await response.json();
+                /*
+                 * Read the response as text first.
+                 * This prevents the:
+                 *
+                 * Unexpected end of JSON input
+                 *
+                 * error when the server returns an empty response.
+                 */
+                const rawResponse = await response.text();
 
-                if (!response.ok) {
-                    throw new Error(
-                        data.error ||
-                        data.message ||
-                        "Invalid login details."
-                    );
-                }
+                let data = {};
 
-                loginMessage.textContent =
-                    "Login successful. Opening your dashboard...";
+                if (rawResponse.trim()) {
 
-                loginMessage.classList.add("success");
+                    try {
 
-                setTimeout(() => {
-                    window.location.href = "/dashboard.html";
-                }, 500);
-
-            } catch (error) {
-
-                loginMessage.textContent =
-                    error.message || "Login failed.";
-
-                loginMessage.classList.add("error");
-
-                loginButton.disabled = false;
-                loginButton.textContent = "Login";
-            }
-        });
-    </script>
-
-</body>
-</html>
+                        data =
