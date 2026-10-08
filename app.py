@@ -118,7 +118,7 @@ PLANS = {
         "commercial": False,
     },
 
-    "monthly": {
+        "monthly": {
         "name": "Monthly Main",
         "price": 5000,
         "images": 100,
@@ -126,9 +126,8 @@ PLANS = {
         "videos": 20,
         "resolution": "1080p",
         "commercial": True,
-        )
-
-        )
+    },
+}
 
 
 # ============================================================
