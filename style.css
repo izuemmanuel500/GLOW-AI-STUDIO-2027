@@ -365,4 +365,613 @@ nav a:hover {
 .signup-form {
     width: 100%;
 
-    display: flex
+    display: flex;
+    flex-direction: column;
+
+    gap: 22px;
+}
+
+/* =========================================================
+   FORM GROUPS
+   ========================================================= */
+
+.form-group {
+    width: 100%;
+    margin: 0;
+}
+
+.form-group label,
+.auth-form label,
+.login-form label,
+.signup-form label {
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: #eee7f2;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.form-group input,
+.auth-form input,
+.login-form input,
+.signup-form input,
+.auth-form select,
+.login-form select,
+.signup-form select,
+.auth-form textarea,
+.login-form textarea,
+.signup-form textarea {
+    width: 100%;
+
+    min-height: 54px;
+
+    padding: 0 17px;
+
+    color: #ffffff;
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.13);
+
+    border-radius: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.auth-form textarea,
+.login-form textarea,
+.signup-form textarea {
+    padding: 14px 17px;
+
+    min-height: 120px;
+
+    resize: vertical;
+}
+
+.form-group input::placeholder,
+.auth-form input::placeholder,
+.login-form input::placeholder,
+.signup-form input::placeholder {
+    color: #81758c;
+}
+
+/* =========================================================
+   INPUT FOCUS
+   ========================================================= */
+
+.form-group input:focus,
+.auth-form input:focus,
+.login-form input:focus,
+.signup-form input:focus,
+.auth-form textarea:focus,
+.login-form textarea:focus,
+.signup-form textarea:focus {
+    border-color: #b84dff;
+
+    background:
+        rgba(255, 255, 255, 0.075);
+
+    box-shadow:
+        0 0 0 3px rgba(184, 77, 255, 0.12),
+        0 0 22px rgba(184, 77, 255, 0.10);
+}
+
+/* =========================================================
+   FILE INPUT
+   ========================================================= */
+
+input[type="file"] {
+    min-height: auto;
+
+    padding: 12px;
+
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+    margin-right: 12px;
+
+    padding: 9px 14px;
+
+    border: none;
+    border-radius: 10px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #9b42ff,
+            #ff2da9
+        );
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   AUTH BUTTON
+   ========================================================= */
+
+.auth-form button,
+.login-form button,
+.signup-form button {
+    width: 100%;
+
+    min-height: 56px;
+
+    margin-top: 4px;
+
+    border: none;
+    border-radius: 15px;
+
+    color: #ffffff;
+
+    font-weight: 800;
+    font-size: 16px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #9b42ff,
+            #ff2da9
+        );
+
+    box-shadow:
+        0 12px 32px rgba(195, 57, 255, 0.25);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.auth-form button:hover,
+.login-form button:hover,
+.signup-form button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 16px 40px rgba(195, 57, 255, 0.38);
+}
+
+/* =========================================================
+   AUTH FOOTER
+   ========================================================= */
+
+.auth-footer,
+.login-footer,
+.signup-footer {
+    margin-top: 28px;
+
+    text-align: center;
+
+    color: #a99dae;
+
+    font-size: 14px;
+}
+
+.auth-footer a,
+.login-footer a,
+.signup-footer a {
+    color: #d979ff;
+
+    font-weight: 800;
+
+    transition: 0.2s ease;
+}
+
+.auth-footer a:hover,
+.login-footer a:hover,
+.signup-footer a:hover {
+    color: #ff70c9;
+
+    text-shadow:
+        0 0 12px rgba(255, 75, 205, 0.5);
+}
+
+/* =========================================================
+   AUTH MESSAGE / ERROR
+   ========================================================= */
+
+.auth-message,
+.login-message,
+.signup-message,
+.error-message,
+.success-message {
+    width: 100%;
+
+    margin-top: 6px;
+
+    padding: 12px 14px;
+
+    border-radius: 12px;
+
+    font-size: 14px;
+
+    text-align: center;
+}
+
+.auth-message:empty,
+.login-message:empty,
+.signup-message:empty,
+.error-message:empty,
+.success-message:empty {
+    display: none;
+}
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+.dashboard {
+    width: 100%;
+
+    padding: 45px 20px 80px;
+}
+
+.dashboard-header {
+    width: min(1180px, 100%);
+
+    margin: 0 auto 35px;
+}
+
+.dashboard-header h1 {
+    font-size: clamp(30px, 5vw, 52px);
+
+    line-height: 1.15;
+
+    margin-bottom: 10px;
+}
+
+.dashboard-header p {
+    color: #bdb1c7;
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card,
+.studio-card,
+.plan-card,
+.workspace-card {
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.10);
+
+    border-radius: 22px;
+
+    padding: 26px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.20);
+}
+
+/* =========================================================
+   STUDIO GRID
+   ========================================================= */
+
+.studio-grid {
+    width: min(1180px, 100%);
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 24px;
+}
+
+/* =========================================================
+   WORKSPACE
+   ========================================================= */
+
+.workspace {
+    width: min(1180px, 100%);
+
+    margin: 30px auto 0;
+}
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+
+.modal,
+.popup,
+.dialog {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 3000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.72);
+
+    backdrop-filter: blur(10px);
+}
+
+.modal-content,
+.popup-content,
+.dialog-content {
+    width: min(520px, 100%);
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    padding: 30px;
+
+    background:
+        #12091b;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.12);
+
+    border-radius: 24px;
+}
+
+/* =========================================================
+   MODAL FORM SPACING
+   ========================================================= */
+
+.modal-content form,
+.popup-content form,
+.dialog-content form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+.modal-content label,
+.popup-content label,
+.dialog-content label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #eee7f2;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select,
+.popup-content input,
+.popup-content textarea,
+.popup-content select,
+.dialog-content input,
+.dialog-content textarea,
+.dialog-content select {
+    width: 100%;
+
+    min-height: 50px;
+
+    padding: 12px 15px;
+
+    color: #ffffff;
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.13);
+
+    border-radius: 12px;
+
+    outline: none;
+}
+
+.modal-content textarea,
+.popup-content textarea,
+.dialog-content textarea {
+    min-height: 110px;
+
+    resize: vertical;
+}
+
+/* =========================================================
+   HIDDEN ELEMENT
+   ========================================================= */
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .container {
+        width: min(100% - 28px, 1180px);
+    }
+
+    .topbar {
+        min-height: 70px;
+
+        padding: 12px 16px;
+    }
+
+    .logo {
+        font-size: 22px;
+
+        letter-spacing: 2px;
+    }
+
+    nav {
+        display: none;
+    }
+
+    .hero {
+        padding: 70px 18px 55px;
+    }
+
+    .hero h1 {
+        font-size: 43px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+
+    /* AUTH */
+
+    .auth-page {
+        min-height: 100vh;
+
+        padding: 30px 16px;
+    }
+
+    .auth-card {
+        padding: 32px 22px;
+
+        border-radius: 22px;
+    }
+
+    .auth-header,
+    .login-header,
+    .signup-header {
+        margin-bottom: 32px;
+    }
+
+    .auth-logo,
+    .login-logo,
+    .signup-logo {
+        width: 72px;
+        height: 72px;
+
+        margin-bottom: 20px;
+    }
+
+    .auth-header h1,
+    .login-header h1,
+    .signup-header h1 {
+        font-size: 27px;
+    }
+
+    .auth-form,
+    .login-form,
+    .signup-form {
+        gap: 20px;
+    }
+
+    .form-group label,
+    .auth-form label,
+    .login-form label,
+    .signup-form label {
+        margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .auth-form input,
+    .login-form input,
+    .signup-form input {
+        min-height: 53px;
+    }
+
+    .studio-grid {
+        grid-template-columns: 1fr;
+
+        gap: 18px;
+    }
+
+    .dashboard {
+        padding: 30px 16px 60px;
+    }
+
+    .card,
+    .studio-card,
+    .plan-card,
+    .workspace-card {
+        padding: 20px;
+    }
+
+    .modal,
+    .popup,
+    .dialog {
+        padding: 14px;
+    }
+
+    .modal-content,
+    .popup-content,
+    .dialog-content {
+        padding: 22px;
+
+        border-radius: 20px;
+    }
+}
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .auth-page {
+        padding: 22px 12px;
+    }
+
+    .auth-card {
+        padding: 28px 18px;
+
+        border-radius: 20px;
+    }
+
+    .auth-form,
+    .login-form,
+    .signup-form {
+        gap: 19px;
+    }
+
+    .auth-header h1,
+    .login-header h1,
+    .signup-header h1 {
+        font-size: 25px;
+    }
+
+    .auth-logo,
+    .login-logo,
+    .signup-logo {
+        width: 68px;
+        height: 68px;
+    }
+
+    .auth-form button,
+    .login-form button,
+    .signup-form button {
+        min-height: 54px;
+    }
+   }
