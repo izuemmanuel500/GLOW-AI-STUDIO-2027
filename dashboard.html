@@ -2063,6 +2063,62 @@ document.addEventListener(
         }
 
 
-        /* BACKGROUND CLICK — ACCOUNT */
+                /* BACKGROUND CLICK — ACCOUNT */
 
         const accountModal =
+            glowElement(
+                "accountModal"
+            );
+
+        if (accountModal) {
+
+            accountModal.addEventListener(
+                "click",
+                function(event) {
+
+                    if (
+                        event.target ===
+                        accountModal
+                    ) {
+
+                        closeGlowAccount();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* ESCAPE KEY */
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (event.key === "Escape") {
+
+                    closeGlowStudio();
+
+                    closeGlowAccount();
+
+                }
+
+            }
+        );
+
+
+        /* LOAD DASHBOARD DATA */
+
+        loadGlowUser();
+
+        refreshGlowCreations();
+
+    }
+);
+
+</script>
+
+</body>
+</html>
