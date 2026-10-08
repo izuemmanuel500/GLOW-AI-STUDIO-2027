@@ -88,9 +88,12 @@ PLANS = {
     "free": {
         "name": "Free",
         "price": 0,
+
+        # TESTING LIMITS
         "images": 5,
-        "music": 0,
-        "videos": 0,
+        "music": 2,
+        "videos": 1,
+
         "resolution": "standard",
         "commercial": False,
     },
@@ -123,8 +126,9 @@ PLANS = {
         "videos": 20,
         "resolution": "1080p",
         "commercial": True,
-    },
-}
+        )
+
+        )
 
 
 # ============================================================
