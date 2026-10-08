@@ -116,6 +116,18 @@
                 .getElementById("loginPassword")
                 .value;
 
+            if (!identifier || !password) {
+                loginMessage.textContent =
+                    "Please enter your username/email and password.";
+
+                loginMessage.classList.add("error");
+
+                loginButton.disabled = false;
+                loginButton.textContent = "Login";
+
+                return;
+            }
+
             try {
 
                 const response = await fetch("/api/auth/login", {
@@ -128,19 +140,23 @@
                         "Accept": "application/json"
                     },
 
+                    /*
+                     * Send the identifier in all compatible fields.
+                     * This supports both username and email login.
+                     */
                     body: JSON.stringify({
                         identifier: identifier,
+                        username: identifier,
+                        email: identifier,
                         password: password
                     })
                 });
 
                 /*
-                 * Read the response as text first.
-                 * This prevents the:
+                 * Read response as text first so an empty or
+                 * non-JSON response does not cause:
                  *
                  * Unexpected end of JSON input
-                 *
-                 * error when the server returns an empty response.
                  */
                 const rawResponse = await response.text();
 
@@ -150,4 +166,70 @@
 
                     try {
 
-                        data =
+                        data = JSON.parse(rawResponse);
+
+                    } catch (jsonError) {
+
+                        console.error(
+                            "Invalid server response:",
+                            rawResponse
+                        );
+
+                        throw new Error(
+                            "The server returned an unexpected response. Please try again."
+                        );
+                    }
+                }
+
+                /*
+                 * Login failed.
+                 */
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Invalid username/email or password."
+                    );
+                }
+
+                /*
+                 * Login successful.
+                 */
+                loginMessage.textContent =
+                    data.message ||
+                    "Login successful. Opening your dashboard...";
+
+                loginMessage.classList.add("success");
+
+                loginButton.textContent = "Login Successful ✓";
+
+                /*
+                 * Give Flask time to establish the session
+                 * before opening the dashboard.
+                 */
+                setTimeout(function() {
+
+                    window.location.href = "/dashboard.html";
+
+                }, 700);
+
+            } catch (error) {
+
+                console.error("Login error:", error);
+
+                loginMessage.textContent =
+                    error.message ||
+                    "Login failed. Please try again.";
+
+                loginMessage.classList.add("error");
+
+                loginButton.disabled = false;
+                loginButton.textContent = "Login";
+            }
+
+        });
+    </script>
+
+</body>
+</html>
