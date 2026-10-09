@@ -1,2124 +1,1397 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>GLOW AI STUDIO 2027 — Dashboard</title>
 
-    <meta
-        name="description"
-        content="GLOW AI STUDIO 2027 creator dashboard."
-    >
+    <meta name="description"
+          content="Create AI pictures, music and videos with GLOW AI STUDIO 2027.">
 
-    <link
-        rel="stylesheet"
-        href="/dashboard.css"
-    >
+    <link rel="stylesheet" href="/dashboard.css">
 
     <style>
-
-        /* =========================================
-           GLOW STUDIO POPUP
-        ========================================= */
-
+        /* GLOW STUDIO MODAL */
         #glowStudioModal {
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             display: none;
-
             align-items: center;
             justify-content: center;
-
-            padding: 20px;
-
+            padding: 16px;
             box-sizing: border-box;
-
-            background: rgba(4, 2, 15, 0.90);
-
+            background: rgba(4, 2, 15, .92);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
-
-            z-index: 999999 !important;
-
+            z-index: 999999;
             overflow-y: auto;
-
-            pointer-events: auto;
         }
 
         #glowStudioModal.active {
-            display: flex !important;
+            display: flex;
         }
 
         .glow-modal-box {
             position: relative;
-
             width: 100%;
-            max-width: 650px;
-            max-height: 90vh;
-
+            max-width: 720px;
+            max-height: 94vh;
             overflow-y: auto;
-
             box-sizing: border-box;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(29, 17, 55, 0.99),
-                    rgba(10, 7, 25, 0.99)
-                );
-
-            border:
-                1px solid
-                rgba(255,255,255,0.14);
-
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,.14);
             border-radius: 24px;
-
-            padding: 28px;
-
-            color: #ffffff;
-
-            box-shadow:
-                0 30px 100px rgba(0,0,0,0.75),
-                0 0 60px rgba(180,70,255,0.20);
-
-            z-index: 1000000;
-
-            pointer-events: auto;
+            color: #fff;
+            background:
+                radial-gradient(circle at top right,
+                    rgba(168,85,247,.18), transparent 38%),
+                linear-gradient(145deg,#1d1137,#0a0719);
+            box-shadow: 0 30px 100px rgba(0,0,0,.75);
         }
 
         .glow-modal-close {
             position: absolute;
-
-            top: 14px;
-            right: 16px;
-
+            top: 12px;
+            right: 14px;
             width: 42px;
             height: 42px;
-
             border: 0;
             border-radius: 50%;
-
-            background: rgba(255,255,255,0.08);
-
-            color: #ffffff;
-
-            font-size: 28px;
-
+            color: white;
+            background: rgba(255,255,255,.09);
+            font-size: 27px;
             cursor: pointer;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
             z-index: 10;
-        }
-
-        .glow-modal-close:hover {
-            background: rgba(255,80,150,0.25);
-            transform: rotate(90deg);
         }
 
         .glow-modal-badge {
             display: inline-block;
-
-            padding: 7px 13px;
-
-            border-radius: 999px;
-
-            background: rgba(180,70,255,0.14);
-
-            border:
-                1px solid
-                rgba(210,100,255,0.25);
-
-            color: #d99cff;
-
-            font-size: 12px;
-
-            font-weight: 700;
-
-            letter-spacing: 1px;
-
+            padding: 7px 12px;
             margin-bottom: 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(210,100,255,.25);
+            background: rgba(180,70,255,.14);
+            color: #d99cff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
 
         .glow-modal-box h2 {
-            margin: 0 0 8px;
-
-            font-size:
-                clamp(26px, 5vw, 36px);
+            margin: 0 45px 10px 0;
+            font-size: clamp(25px,5vw,36px);
         }
 
-        .glow-modal-box p {
-            color:
-                rgba(255,255,255,0.68);
-
-            line-height: 1.6;
-
+        .glow-modal-description {
             margin-bottom: 24px;
+            color: rgba(255,255,255,.7);
+            line-height: 1.6;
         }
 
         .glow-form {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
         .glow-form label {
-            font-size: 14px;
-
-            font-weight: 600;
-
-            color:
-                rgba(255,255,255,0.85);
+            margin-top: 5px;
+            color: #e1dced;
+            font-size: 13px;
+            font-weight: 700;
         }
 
         .glow-form textarea,
-        .glow-form select {
+        .glow-form select,
+        .glow-form input[type="file"] {
             width: 100%;
-
             box-sizing: border-box;
-
-            border:
-                1px solid
-                rgba(255,255,255,0.13);
-
-            background:
-                rgba(255,255,255,0.06);
-
-            color: #ffffff;
-
-            border-radius: 14px;
-
             padding: 14px;
-
-            font-size: 15px;
-
-            outline: none;
+            border: 1px solid rgba(255,255,255,.14);
+            border-radius: 13px;
+            background: #151022;
+            color: white;
+            font: inherit;
         }
 
         .glow-form textarea {
-            min-height: 150px;
+            min-height: 125px;
             resize: vertical;
         }
 
         .glow-form select option {
-            background: #171027;
-            color: #ffffff;
+            background: #151022;
+            color: white;
         }
 
         .glow-form textarea:focus,
         .glow-form select:focus {
-            border-color:
-                rgba(210,100,255,0.65);
-
-            box-shadow:
-                0 0 0 3px
-                rgba(180,70,255,0.10);
+            outline: 2px solid rgba(168,85,247,.4);
+            border-color: #a855f7;
         }
 
         .glow-generate-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 15px;
             border: 0;
-
-            border-radius: 14px;
-
-            padding: 15px 20px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #a855f7,
-                    #ec4899
-                );
-
-            color: #ffffff;
-
+            border-radius: 13px;
+            color: white;
+            background: linear-gradient(135deg,#a855f7,#ec4899);
             font-size: 15px;
-
             font-weight: 800;
-
             cursor: pointer;
-
-            margin-top: 8px;
-
-            box-shadow:
-                0 12px 30px
-                rgba(168,85,247,0.25);
         }
 
         .glow-generate-btn:disabled {
-            opacity: 0.55;
+            opacity: .6;
             cursor: wait;
+        }
+
+        .glow-secondary-btn {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid rgba(255,255,255,.14);
+            border-radius: 12px;
+            background: rgba(255,255,255,.06);
+            color: white;
+            cursor: pointer;
         }
 
         .glow-message {
             display: none;
-
-            margin-top: 18px;
-
+            margin-top: 17px;
             padding: 14px;
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 13px;
+            background: rgba(255,255,255,.05);
+            color: #eee;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
 
-            border-radius: 14px;
+        .glow-preview {
+            display: none;
+            width: 100%;
+            max-height: 450px;
+            margin-top: 18px;
+            border-radius: 16px;
+            background: #05050a;
+            object-fit: contain;
+        }
 
-            background:
-                rgba(255,255,255,0.06);
-
-            border:
-                1px solid
-                rgba(255,255,255,0.10);
-
+        .glow-file-hint {
+            color: #a5a1b5;
+            font-size: 12px;
             line-height: 1.5;
         }
 
-        /* =========================================
-           BUTTON SAFETY
-        ========================================= */
+        .creation-card {
+            min-width: 0;
+            overflow: hidden;
+            padding: 18px;
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 18px;
+            background: rgba(255,255,255,.04);
+        }
 
-        .studio-action,
-        .profile-btn,
-        .refresh-btn,
-        .logout-btn {
-            position: relative;
-            z-index: 5;
-            pointer-events: auto !important;
-            cursor: pointer !important;
+        .creation-card h3 {
+            margin-bottom: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .creation-card p {
+            margin: 8px 0;
+            color: #a5a1b5;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .creation-card img,
+        .creation-card video {
+            display: block;
+            width: 100%;
+            max-height: 330px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            background: #05050a;
+            object-fit: contain;
+        }
+
+        .creation-card audio {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .creation-card a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #d8b4fe;
+            overflow-wrap: anywhere;
+        }
+
+        .creation-status {
+            display: inline-block;
+            padding: 5px 9px;
+            margin-top: 8px;
+            border-radius: 20px;
+            background: rgba(168,85,247,.15);
+            color: #d8b4fe;
+            font-size: 11px;
+        }
+
+        .image-upload-preview {
+            display: none;
+            width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+            border-radius: 14px;
+            object-fit: contain;
+            background: #080711;
+        }
+
+        #accountModal {
+            z-index: 999998;
+        }
+
+        #accountModal .modal-box {
+            color: white;
         }
 
         @media (max-width: 600px) {
-
-            #glowStudioModal {
-                padding: 10px;
-            }
-
             .glow-modal-box {
-                padding: 22px;
+                padding: 24px 18px;
                 border-radius: 20px;
-                max-height: 94vh;
+                max-height: 96vh;
             }
-
         }
-
     </style>
-
 </head>
-
 
 <body>
 
-
-<!-- =========================================
-     HEADER
-========================================= -->
-
 <header class="dashboard-header">
-
     <div class="brand">
-
-        <div class="brand-icon">
-            ✨
-        </div>
-
+        <div class="brand-icon">✨</div>
         <div class="brand-text">
-
-            <strong>
-                GLOW
-            </strong>
-
-            <small>
-                AI STUDIO 2027
-            </small>
-
+            <strong>GLOW</strong>
+            <small>AI STUDIO 2027</small>
         </div>
-
     </div>
-
 
     <div class="header-right">
-
         <div class="user-mini">
-
-            <div
-                class="user-avatar"
-                id="userAvatar"
-            >
-                ✨
-            </div>
-
+            <div class="user-avatar" id="userAvatar">✨</div>
             <div class="user-info">
-
-                <strong id="headerUsername">
-                    Creator
-                </strong>
-
-                <small id="headerPlan">
-                    GLOW FREE
-                </small>
-
+                <strong id="headerUsername">Creator</strong>
+                <small id="headerPlan">GLOW FREE</small>
             </div>
-
         </div>
 
-
-        <button
-            class="logout-btn"
-            id="logoutButton"
-            type="button"
-        >
+        <button class="logout-btn" id="logoutButton" type="button">
             Logout
         </button>
-
     </div>
-
 </header>
-
-
-
-<!-- =========================================
-     DASHBOARD
-========================================= -->
 
 <main class="dashboard">
 
-
-    <!-- WELCOME -->
-
     <section class="welcome-section">
-
         <div>
-
-            <div class="dashboard-badge">
-                ✨ CREATOR DASHBOARD
-            </div>
+            <div class="dashboard-badge">✨ CREATOR DASHBOARD</div>
 
             <h1>
                 Welcome,
-                <span id="welcomeUsername">
-                    Creator
-                </span>
+                <span id="welcomeUsername">Creator</span>
             </h1>
 
             <p>
                 Your creative world is ready.
-                Choose a studio and bring your ideas to life.
+                Create pictures, music and videos with GLOW AI STUDIO.
             </p>
-
         </div>
-
     </section>
-
-
-
-    <!-- OVERVIEW -->
 
     <section class="account-overview">
 
-
         <div class="overview-card">
-
-            <div class="overview-icon">
-                💎
-            </div>
-
+            <div class="overview-icon">💎</div>
             <div class="overview-content">
-
-                <span>
-                    CURRENT PLAN
-                </span>
-
-                <strong id="planName">
-                    GLOW FREE
-                </strong>
-
-                <small>
-                    Your current creative plan
-                </small>
-
+                <span>CURRENT PLAN</span>
+                <strong id="planName">GLOW FREE</strong>
+                <small>Your current creative plan</small>
             </div>
-
         </div>
 
-
         <div class="overview-card">
-
-            <div class="overview-icon">
-                🖼️
-            </div>
-
+            <div class="overview-icon">🖼️</div>
             <div class="overview-content">
-
-                <span>
-                    AI PICTURES
-                </span>
-
-                <strong id="imageUsage">
-                    0 / 5
-                </strong>
-
-                <small>
-                    generations used
-                </small>
-
+                <span>AI PICTURES</span>
+                <strong id="imageUsage">0 / 5</strong>
+                <small>Generations used</small>
             </div>
-
         </div>
 
-
         <div class="overview-card">
-
-            <div class="overview-icon">
-                🎵
-            </div>
-
+            <div class="overview-icon">🎵</div>
             <div class="overview-content">
-
-                <span>
-                    AI MUSIC
-                </span>
-
-                <strong id="musicUsage">
-                    0 / 0
-                </strong>
-
-                <small>
-                    generations used
-                </small>
-
+                <span>AI MUSIC</span>
+                <strong id="musicUsage">0 / 0</strong>
+                <small>Generations used</small>
             </div>
-
         </div>
 
-
         <div class="overview-card">
-
-            <div class="overview-icon">
-                🎬
-            </div>
-
+            <div class="overview-icon">🎬</div>
             <div class="overview-content">
-
-                <span>
-                    AI VIDEO
-                </span>
-
-                <strong id="videoUsage">
-                    0 / 0
-                </strong>
-
-                <small>
-                    generations used
-                </small>
-
+                <span>AI VIDEO</span>
+                <strong id="videoUsage">0 / 0</strong>
+                <small>Generations used</small>
             </div>
-
         </div>
 
     </section>
-
-
-
-    <!-- =====================================
-         STUDIOS
-    ====================================== -->
 
     <section class="studio-section">
 
         <div class="section-heading">
-
-            <div class="section-label">
-                GLOW STUDIOS
-            </div>
-
-            <h2>
-                Choose your creative studio
-            </h2>
-
-            <p>
-                Two powerful AI tools.
-                One creative platform.
-            </p>
-
+            <div class="section-label">GLOW STUDIOS</div>
+            <h2>Choose your creative studio</h2>
+            <p>Three creative tools. One platform.</p>
         </div>
-
 
         <div class="dashboard-studio-grid">
 
-
-            <!-- MUSIC -->
-
+            <!-- MUSIC STUDIO -->
             <article class="dashboard-studio-card music-studio">
-
                 <div class="studio-glow"></div>
-
-                <div class="dashboard-card-icon">
-                    🎵
-                </div>
-
-                <div class="studio-label">
-                    AI MUSIC
-                </div>
-
-                <h3>
-                    Create Music
-                </h3>
-
+                <div class="dashboard-card-icon">🎵</div>
+                <div class="studio-label">AI MUSIC</div>
+                <h3>Create Music</h3>
                 <p>
-                    Describe the song you want and let AI
-                    create lyrics, vocals, melodies,
-                    beats and instruments.
+                    Turn your ideas into songs with AI vocals,
+                    melodies, beats and instruments.
                 </p>
 
                 <div class="studio-features">
-
-                    <span>✓ AI vocals</span>
-                    <span>✓ Lyrics generation</span>
-                    <span>✓ Beats & instruments</span>
+                    <span>✓ AI music generation</span>
                     <span>✓ Multiple music styles</span>
-
+                    <span>✓ Mood selection</span>
                 </div>
 
-
-                <button
-                    class="studio-action"
-                    id="musicStudioButton"
-                    type="button"
-                >
+                <button class="studio-action"
+                        id="musicStudioButton" type="button">
                     🎵 Open Music Studio →
                 </button>
-
             </article>
 
-
-
-            <!-- VIDEO -->
-
+            <!-- VIDEO STUDIO -->
             <article class="dashboard-studio-card video-studio">
-
                 <div class="studio-glow"></div>
-
-                <div class="dashboard-card-icon">
-                    🎬
-                </div>
-
-                <div class="studio-label">
-                    AI VIDEO
-                </div>
-
-                <h3>
-                    Create Video
-                </h3>
-
+                <div class="dashboard-card-icon">🎬</div>
+                <div class="studio-label">AI VIDEO</div>
+                <h3>Create Video</h3>
                 <p>
-                    Turn your ideas, stories and prompts
-                    into cinematic scenes, characters,
-                    music videos and drama.
+                    Turn your prompts and stories into cinematic
+                    videos with AI.
                 </p>
 
                 <div class="studio-features">
-
-                    <span>✓ AI characters</span>
                     <span>✓ Cinematic scenes</span>
-                    <span>✓ Story generation</span>
-                    <span>✓ Music videos & drama</span>
-
+                    <span>✓ Creative storytelling</span>
+                    <span>✓ AI video generation</span>
                 </div>
 
-
-                <button
-                    class="studio-action"
-                    id="videoStudioButton"
-                    type="button"
-                >
+                <button class="studio-action"
+                        id="videoStudioButton" type="button">
                     🎬 Open Video Studio →
                 </button>
+            </article>
 
+            <!-- NEW PICTURE STUDIO -->
+            <article class="dashboard-studio-card image-studio">
+                <div class="studio-glow"></div>
+                <div class="dashboard-card-icon">🖼️</div>
+                <div class="studio-label">AI PICTURES</div>
+                <h3>Create Pictures</h3>
+                <p>
+                    Generate original AI pictures or upload an existing
+                    photo and describe how you want to edit it.
+                </p>
+
+                <div class="studio-features">
+                    <span>✓ Generate images from text</span>
+                    <span>✓ Upload a photo from your phone</span>
+                    <span>✓ AI photo editing</span>
+                </div>
+
+                <button class="studio-action"
+                        id="imageStudioButton" type="button">
+                    🖼️ Open Picture Studio →
+                </button>
             </article>
 
         </div>
-
     </section>
 
-
-
-    <!-- =====================================
-         WORKSPACE
-    ====================================== -->
-
+    <!-- CREATIONS -->
     <section class="creations-section">
 
         <div class="section-heading creations-heading">
-
             <div>
-
-                <div class="section-label">
-                    YOUR WORKSPACE
-                </div>
-
-                <h2>
-                    Your Creations
-                </h2>
-
-                <p>
-                    Your generated music and videos
-                    will appear here.
-                </p>
-
+                <div class="section-label">YOUR WORKSPACE</div>
+                <h2>Your Creations</h2>
+                <p>Your generated pictures, music and videos appear here.</p>
             </div>
 
-
-            <button
-                class="refresh-btn"
-                id="refreshButton"
-                type="button"
-            >
+            <button class="refresh-btn"
+                    id="refreshButton" type="button">
                 ↻ Refresh
             </button>
-
         </div>
 
-
-        <div
-            class="creations-grid"
-            id="creationsList"
-        >
-
+        <div class="creations-grid" id="creationsList">
             <div class="empty-creations">
-
-                <div class="empty-icon">
-                    ✨
-                </div>
-
-                <h3>
-                    Nothing here yet
-                </h3>
-
-                <p>
-                    Create your first project with
-                    GLOW AI STUDIO.
-                </p>
-
+                <div class="empty-icon">✨</div>
+                <h3>Nothing here yet</h3>
+                <p>Create your first project with GLOW AI STUDIO.</p>
             </div>
-
         </div>
-
     </section>
 
-
-
-    <!-- =====================================
-         ACCOUNT
-    ====================================== -->
-
+    <!-- ACCOUNT -->
     <section class="profile-section">
 
         <div class="section-heading">
-
-            <div class="section-label">
-                YOUR ACCOUNT
-            </div>
-
-            <h2>
-                Account & Profile
-            </h2>
-
+            <div class="section-label">YOUR ACCOUNT</div>
+            <h2>Account &amp; Profile</h2>
         </div>
-
 
         <div class="profile-card">
-
-            <div
-                class="profile-avatar"
-                id="profileAvatar"
-            >
-                ✨
-            </div>
-
+            <div class="profile-avatar" id="profileAvatar">✨</div>
 
             <div class="profile-details">
-
-                <h3 id="profileUsername">
-                    Creator
-                </h3>
-
-                <p id="profileEmail">
-                    Loading...
-                </p>
-
-                <span
-                    class="profile-plan"
-                    id="profilePlan"
-                >
-                    GLOW FREE
-                </span>
-
+                <h3 id="profileUsername">Creator</h3>
+                <p id="profileEmail">Loading...</p>
+                <span class="profile-plan" id="profilePlan">GLOW FREE</span>
             </div>
 
-
-            <button
-                class="profile-btn"
-                id="accountButton"
-                type="button"
-            >
+            <button class="profile-btn"
+                    id="accountButton" type="button">
                 Manage Account
             </button>
-
         </div>
-
     </section>
 
 </main>
 
-
-
-<!-- =========================================
-     STUDIO POPUP
-========================================= -->
-
-<div
-    id="glowStudioModal"
-    aria-hidden="true"
->
-
+<!-- STUDIO MODAL -->
+<div id="glowStudioModal" aria-hidden="true">
     <div class="glow-modal-box">
 
-        <button
-            class="glow-modal-close"
-            id="studioCloseButton"
-            type="button"
-            aria-label="Close"
-        >
-            ×
-        </button>
+        <button class="glow-modal-close"
+                id="studioCloseButton"
+                type="button"
+                aria-label="Close studio">×</button>
 
-
-        <div id="glowStudioContent">
-
-            <div class="glow-modal-badge">
-                GLOW STUDIO
-            </div>
-
-            <h2>
-                ✨ Creative Studio
-            </h2>
-
-            <p>
-                Choose a studio to begin creating.
-            </p>
-
-        </div>
-
+        <div id="glowStudioContent"></div>
     </div>
-
 </div>
 
-
-
-<!-- =========================================
-     ACCOUNT POPUP
-========================================= -->
-
-<div
-    id="accountModal"
-    class="modal"
-    aria-hidden="true"
->
-
+<!-- ACCOUNT MODAL -->
+<div id="accountModal" class="modal" aria-hidden="true">
     <div class="modal-box">
 
-        <button
-            class="close-btn"
-            id="accountCloseButton"
-            type="button"
-        >
-            ×
-        </button>
-
+        <button class="close-btn"
+                id="accountCloseButton"
+                type="button"
+                aria-label="Close account">×</button>
 
         <div class="studio-modal-header">
-
-            <div class="studio-modal-badge">
-                GLOW ACCOUNT
-            </div>
-
-            <h2>
-                👤 My Account
-            </h2>
-
-            <p>
-                Manage your GLOW account.
-            </p>
-
+            <div class="studio-modal-badge">GLOW ACCOUNT</div>
+            <h2>👤 My Account</h2>
+            <p>View your GLOW account information.</p>
         </div>
 
+        <p><strong>Username</strong></p>
+        <p id="accountUsername">Creator</p>
+        <br>
 
-        <div class="account-information">
+        <p><strong>Email</strong></p>
+        <p id="accountEmail">Loading...</p>
+        <br>
 
-            <p>
-                <strong>Username</strong>
-            </p>
-
-            <p id="accountUsername">
-                Creator
-            </p>
-
-            <br>
-
-            <p>
-                <strong>Email</strong>
-            </p>
-
-            <p id="accountEmail">
-                Loading...
-            </p>
-
-            <br>
-
-            <p>
-                <strong>Plan</strong>
-            </p>
-
-            <p id="accountPlan">
-                GLOW FREE
-            </p>
-
-        </div>
-
+        <p><strong>Plan</strong></p>
+        <p id="accountPlan">GLOW FREE</p>
     </div>
-
 </div>
 
-
-
-<!-- =========================================
-     FOOTER
-========================================= -->
-
 <footer>
-
-    <div class="footer-logo">
-        ✦ GLOW AI STUDIO 2027
-    </div>
-
-    <p>
-        Create music. Create video.
-        Create your world.
-    </p>
-
-    <small>
-        © 2027 GLOW AI STUDIO
-    </small>
-
+    <div class="footer-logo">✦ GLOW AI STUDIO 2027</div>
+    <p>Create pictures. Create music. Create video. Create your world.</p>
+    <small>© 2027 GLOW AI STUDIO</small>
 </footer>
 
-
-
 <script>
-
-/* =====================================================
-   GLOW AI STUDIO 2027
-   DASHBOARD BUTTON SYSTEM
-===================================================== */
-
 "use strict";
 
+const $ = id => document.getElementById(id);
 
-/* =====================================================
-   HELPER
-===================================================== */
+const escapeHTML = value => String(value ?? "").replace(
+    /[&<>"']/g,
+    character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]
+);
 
-function glowElement(id) {
+async function glowFetch(url, options = {}) {
+    const response = await fetch(url, {
+        credentials: "include",
+        ...options
+    });
 
-    return document.getElementById(id);
+    let data = {};
 
-}
+    try {
+        data = await response.json();
+    } catch (_) {}
 
-
-/* =====================================================
-   OPEN STUDIO
-===================================================== */
-
-function openGlowStudio(type) {
-
-    const modal =
-        glowElement("glowStudioModal");
-
-    const content =
-        glowElement("glowStudioContent");
-
-
-    if (!modal || !content) {
-
-        alert("Studio popup is missing.");
-
-        return;
-
+    if (!response.ok) {
+        throw new Error(data.error || data.message || "Request failed.");
     }
 
+    return data;
+}
+
+/* ================================
+   STUDIO WINDOW
+================================ */
+
+function openGlowStudio(type) {
+    const modal = $("glowStudioModal");
+    const content = $("glowStudioContent");
+
+    if (!modal || !content) return;
 
     if (type === "music") {
-
         content.innerHTML = `
-
-            <div class="glow-modal-badge">
-                GLOW MUSIC
-            </div>
-
-            <h2>
-                🎵 Create Music
-            </h2>
-
-            <p>
-                Describe the song you want GLOW AI
-                to create.
+            <div class="glow-modal-badge">GLOW MUSIC</div>
+            <h2>🎵 Create Music</h2>
+            <p class="glow-modal-description">
+                Describe the song you want GLOW AI to create.
             </p>
 
-            <form
-                class="glow-form"
-                id="glowMusicForm"
-            >
+            <form class="glow-form" id="glowMusicForm">
+                <label for="glowMusicPrompt">Describe your song</label>
+                <textarea id="glowMusicPrompt" required
+                    placeholder="An emotional Afrobeats song about success and never giving up..."></textarea>
 
-                <label>
-                    Describe your song
-                </label>
-
-                <textarea
-                    id="glowMusicPrompt"
-                    placeholder="Example: An emotional Afrobeats song about success and never giving up..."
-                    required
-                ></textarea>
-
-                <label>
-                    Music style
-                </label>
-
+                <label for="glowMusicGenre">Music style</label>
                 <select id="glowMusicGenre">
-
                     <option>Afrobeats</option>
                     <option>Amapiano</option>
                     <option>Afro Pop</option>
                     <option>Hip Hop</option>
-                    <option>R&B</option>
+                    <option>R&amp;B</option>
                     <option>Gospel</option>
                     <option>Pop</option>
-
                 </select>
 
-                <label>
-                    Mood
-                </label>
-
+                <label for="glowMusicMood">Mood</label>
                 <select id="glowMusicMood">
-
                     <option>Energetic</option>
                     <option>Happy</option>
                     <option>Emotional</option>
                     <option>Romantic</option>
                     <option>Chill</option>
-
                 </select>
 
-                <button
-                    class="glow-generate-btn"
-                    id="generateMusicButton"
-                    type="submit"
-                >
+                <button class="glow-generate-btn" id="generateMusicButton">
                     🎵 Generate Music
                 </button>
-
             </form>
 
-            <div
-                id="glowMusicMessage"
-                class="glow-message"
-            ></div>
-
+            <div class="glow-message" id="glowMusicMessage" role="status"></div>
+            <div id="glowMusicResult"></div>
         `;
 
-
-        const form =
-            glowElement("glowMusicForm");
-
-        if (form) {
-
-            form.addEventListener(
-                "submit",
-                generateGlowMusic
-            );
-
-        }
-
+        $("glowMusicForm").addEventListener("submit", generateGlowMusic);
     }
 
-
-    else if (type === "video") {
-
+    if (type === "video") {
         content.innerHTML = `
-
-            <div class="glow-modal-badge">
-                GLOW VIDEO
-            </div>
-
-            <h2>
-                🎬 Create Video
-            </h2>
-
-            <p>
-                Describe the cinematic video
-                you want GLOW AI to create.
+            <div class="glow-modal-badge">GLOW VIDEO</div>
+            <h2>🎬 Create Video</h2>
+            <p class="glow-modal-description">
+                Describe the video you want GLOW AI to create.
             </p>
 
-            <form
-                class="glow-form"
-                id="glowVideoForm"
-            >
+            <form class="glow-form" id="glowVideoForm">
+                <label for="glowVideoPrompt">Describe your video</label>
+                <textarea id="glowVideoPrompt" required
+                    placeholder="A cinematic Lagos night scene with a young artist walking through a futuristic city..."></textarea>
 
-                <label>
-                    Describe your video
-                </label>
-
-                <textarea
-                    id="glowVideoPrompt"
-                    placeholder="Example: A cinematic Lagos night scene with a young artist walking through a futuristic city..."
-                    required
-                ></textarea>
-
-                <label>
-                    Duration
-                </label>
-
+                <label for="glowVideoDuration">Duration</label>
                 <select id="glowVideoDuration">
-
-                    <option value="5">
-                        5 seconds
-                    </option>
-
-                    <option value="10">
-                        10 seconds
-                    </option>
-
-                    <option value="15">
-                        15 seconds
-                    </option>
-
-                    <option value="30">
-                        30 seconds
-                    </option>
-
+                    <option value="5">5 seconds</option>
+                    <option value="10">10 seconds</option>
+                    <option value="15">15 seconds</option>
+                    <option value="30">30 seconds</option>
                 </select>
 
-                <button
-                    class="glow-generate-btn"
-                    id="generateVideoButton"
-                    type="submit"
-                >
+                <button class="glow-generate-btn" id="generateVideoButton">
                     🎬 Generate Video
                 </button>
-
             </form>
 
-            <div
-                id="glowVideoMessage"
-                class="glow-message"
-            ></div>
-
+            <div class="glow-message" id="glowVideoMessage" role="status"></div>
+            <div id="glowVideoResult"></div>
         `;
 
-
-        const form =
-            glowElement("glowVideoForm");
-
-        if (form) {
-
-            form.addEventListener(
-                "submit",
-                generateGlowVideo
-            );
-
-        }
-
+        $("glowVideoForm").addEventListener("submit", generateGlowVideo);
     }
 
+    if (type === "image") {
+        content.innerHTML = `
+            <div class="glow-modal-badge">GLOW PICTURE STUDIO</div>
+            <h2>🖼️ Create or Edit Pictures</h2>
+            <p class="glow-modal-description">
+                Generate a new picture or upload a photo and tell GLOW
+                how you want to change it.
+            </p>
+
+            <div class="glow-form">
+                <label for="glowImageMode">Choose what you want to do</label>
+                <select id="glowImageMode">
+                    <option value="create">Create a new AI picture</option>
+                    <option value="edit">Upload and edit an existing picture</option>
+                </select>
+
+                <div id="glowUploadArea" style="display:none">
+                    <label for="glowImageFile">Choose a photo from your phone</label>
+                    <input id="glowImageFile"
+                           type="file"
+                           accept="image/jpeg,image/png,image/webp">
+
+                    <p class="glow-file-hint">
+                        Select a JPG, PNG or WebP image up to 4 MB.
+                        Your selected image will be sent to the image service
+                        for editing.
+                    </p>
+
+                    <img id="glowOriginalPreview"
+                         class="image-upload-preview"
+                         alt="Selected photo preview">
+                </div>
+
+                <label for="glowImagePrompt">Describe your picture or edit</label>
+                <textarea id="glowImagePrompt"
+                    placeholder="Example: A professional portrait with natural lighting..."
+                    required></textarea>
+
+                <label for="glowImageSize">Image size</label>
+                <select id="glowImageSize">
+                    <option value="square_hd">Square HD</option>
+                    <option value="square">Square</option>
+                    <option value="portrait_4_3">Portrait</option>
+                    <option value="landscape_4_3">Landscape</option>
+                    <option value="landscape_16_9">Wide landscape</option>
+                    <option value="portrait_16_9">Tall portrait</option>
+                </select>
+
+                <button class="glow-generate-btn" id="generateImageButton">
+                    ✨ Generate Picture
+                </button>
+            </div>
+
+            <div class="glow-message" id="glowImageMessage" role="status"></div>
+            <div id="glowImageResult"></div>
+        `;
+
+        $("glowImageMode").addEventListener("change", updateImageMode);
+        $("glowImageFile").addEventListener("change", previewSelectedImage);
+        $("generateImageButton").addEventListener("click", generateGlowImage);
+    }
 
     modal.classList.add("active");
-
-    modal.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-
+    modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
-
 }
-
-
-/* =====================================================
-   CLOSE STUDIO
-===================================================== */
 
 function closeGlowStudio() {
-
-    const modal =
-        glowElement("glowStudioModal");
-
-    if (!modal) return;
-
+    const modal = $("glowStudioModal");
     modal.classList.remove("active");
-
-    modal.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
+    modal.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
-
 }
 
+function updateImageMode() {
+    const editing = $("glowImageMode").value === "edit";
 
-/* =====================================================
+    $("glowUploadArea").style.display = editing ? "block" : "none";
+
+    $("glowImagePrompt").placeholder = editing
+        ? "Describe the changes: replace the background with a luxury car showroom, keeping the person's face and clothes natural..."
+        : "Describe the picture you want to generate...";
+
+    $("generateImageButton").textContent = editing
+        ? "✨ Edit My Picture"
+        : "✨ Generate Picture";
+}
+
+let selectedImageDataURL = "";
+
+function previewSelectedImage() {
+    const file = $("glowImageFile").files[0];
+    const preview = $("glowOriginalPreview");
+
+    selectedImageDataURL = "";
+    preview.removeAttribute("src");
+    preview.style.display = "none";
+
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        alert("Please select a JPG, PNG or WebP image.");
+        $("glowImageFile").value = "";
+        return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+        alert("This image is larger than 4 MB. Please choose a smaller image.");
+        $("glowImageFile").value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+        selectedImageDataURL = reader.result;
+        preview.src = selectedImageDataURL;
+        preview.style.display = "block";
+    };
+
+    reader.onerror = () => {
+        alert("Unable to read this image. Please try another photo.");
+    };
+
+    reader.readAsDataURL(file);
+}
+
+/* ================================
    MUSIC GENERATION
-===================================================== */
+================================ */
 
 async function generateGlowMusic(event) {
-
     event.preventDefault();
 
-    const button =
-        glowElement("generateMusicButton");
+    const button = $("generateMusicButton");
+    const message = $("glowMusicMessage");
 
-    const message =
-        glowElement("glowMusicMessage");
-
-    const promptElement =
-        glowElement("glowMusicPrompt");
-
-    const genreElement =
-        glowElement("glowMusicGenre");
-
-    const moodElement =
-        glowElement("glowMusicMood");
-
-
-    if (!promptElement) return;
-
-
-    const prompt =
-        promptElement.value.trim();
-
-    const genre =
-        genreElement
-            ? genreElement.value
-            : "Afrobeats";
-
-    const mood =
-        moodElement
-            ? moodElement.value
-            : "Energetic";
-
+    const prompt = $("glowMusicPrompt").value.trim();
+    const genre = $("glowMusicGenre").value;
+    const mood = $("glowMusicMood").value;
 
     if (!prompt) {
-
-        message.textContent =
-            "Please describe the music you want.";
-
-        message.style.display = "block";
-
+        showMessage(message, "Please describe the music you want.");
         return;
-
     }
 
-
-    if (button) {
-
-        button.disabled = true;
-
-        button.textContent =
-            "🎵 Creating music...";
-
-    }
-
-
-    if (message) {
-
-        message.style.display = "block";
-
-        message.textContent =
-            "🎵 GLOW is sending your music request...";
-
-    }
-
+    button.disabled = true;
+    button.textContent = "🎵 Creating music...";
+    showMessage(message, "Submitting your music request...");
 
     try {
+        const data = await glowFetch("/api/music", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                prompt: prompt,
+                genre: genre,
+                mood: mood,
+                duration: 60
+            })
+        });
 
-        const response =
-            await fetch(
-                "/api/music",
-                {
-                    method: "POST",
-
-                    credentials: "include",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        prompt: prompt,
-
-                        genre: genre,
-
-                        mood: mood,
-
-                        duration: 60
-
-                    })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.error ||
-                "Music generation failed."
-            );
-
-        }
-
-
-        if (message) {
-
-            message.textContent =
-                data.request_id
-                    ? "🎵 Music generation started successfully. Check Your Creations when it is ready."
-                    : "🎵 Music request submitted successfully.";
-
-        }
-
-
-        refreshGlowCreations();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Music error:",
-            error
+        showMessage(
+            message,
+            data.request_id
+                ? "🎵 Your music request has been submitted. Waiting for the result..."
+                : "🎵 Your music request was submitted."
         );
 
+        await refreshGlowCreations();
 
-        if (message) {
-
-            message.textContent =
-                "❌ " +
-                (
-                    error.message ||
-                    "Music generation failed."
-                );
-
+        if (data.request_id) {
+            await waitForGeneration(
+                data.request_id,
+                "glowMusicMessage",
+                "glowMusicResult",
+                "music"
+            );
         }
-
+    } catch (error) {
+        showMessage(message, "❌ " + error.message);
+    } finally {
+        button.disabled = false;
+        button.textContent = "🎵 Generate Music";
     }
-
-    finally {
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.textContent =
-                "🎵 Generate Music";
-
-        }
-
-    }
-
 }
 
-
-/* =====================================================
+/* ================================
    VIDEO GENERATION
-===================================================== */
+================================ */
 
 async function generateGlowVideo(event) {
-
     event.preventDefault();
 
+    const button = $("generateVideoButton");
+    const message = $("glowVideoMessage");
 
-    const button =
-        glowElement("generateVideoButton");
-
-    const message =
-        glowElement("glowVideoMessage");
-
-
-    const promptElement =
-        glowElement("glowVideoPrompt");
-
-    const durationElement =
-        glowElement("glowVideoDuration");
-
-
-    if (!promptElement) return;
-
-
-    const prompt =
-        promptElement.value.trim();
-
-
-    const duration =
-        durationElement
-            ? Number(durationElement.value)
-            : 5;
-
+    const prompt = $("glowVideoPrompt").value.trim();
+    const duration = Number($("glowVideoDuration").value);
 
     if (!prompt) {
-
-        message.textContent =
-            "Please describe the video you want.";
-
-        message.style.display = "block";
-
+        showMessage(message, "Please describe the video you want.");
         return;
-
     }
 
-
-    if (button) {
-
-        button.disabled = true;
-
-        button.textContent =
-            "🎬 Creating video...";
-
-    }
-
-
-    if (message) {
-
-        message.style.display = "block";
-
-        message.textContent =
-            "🎬 GLOW is sending your video request...";
-
-    }
-
+    button.disabled = true;
+    button.textContent = "🎬 Creating video...";
+    showMessage(message, "Submitting your video request...");
 
     try {
+        const data = await glowFetch("/api/video", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                prompt: prompt,
+                duration: duration
+            })
+        });
 
-        const response =
-            await fetch(
-                "/api/video",
-                {
-                    method: "POST",
-
-                    credentials: "include",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        prompt: prompt,
-
-                        duration: duration
-
-                    })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.error ||
-                "Video generation failed."
-            );
-
-        }
-
-
-        if (message) {
-
-            message.textContent =
-                data.request_id
-                    ? "🎬 Video generation started successfully. Check Your Creations when it is ready."
-                    : "🎬 Video request submitted successfully.";
-
-        }
-
-
-        refreshGlowCreations();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Video error:",
-            error
+        showMessage(
+            message,
+            data.request_id
+                ? "🎬 Your video request has been submitted. Waiting for the result..."
+                : "🎬 Your video request was submitted."
         );
 
+        await refreshGlowCreations();
 
-        if (message) {
-
-            message.textContent =
-                "❌ " +
-                (
-                    error.message ||
-                    "Video generation failed."
-                );
-
+        if (data.request_id) {
+            await waitForGeneration(
+                data.request_id,
+                "glowVideoMessage",
+                "glowVideoResult",
+                "video"
+            );
         }
-
+    } catch (error) {
+        showMessage(message, "❌ " + error.message);
+    } finally {
+        button.disabled = false;
+        button.textContent = "🎬 Generate Video";
     }
-
-    finally {
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.textContent =
-                "🎬 Generate Video";
-
-        }
-
-    }
-
 }
 
+/* ================================
+   IMAGE GENERATION / EDITING
+================================ */
 
-/* =====================================================
+async function generateGlowImage(event) {
+    if (event) event.preventDefault();
+
+    const button = $("generateImageButton");
+    const message = $("glowImageMessage");
+
+    const mode = $("glowImageMode").value;
+    const prompt = $("glowImagePrompt").value.trim();
+    const imageSize = $("glowImageSize").value;
+
+    if (!prompt) {
+        showMessage(message, "Please describe the picture or the edits you want.");
+        return;
+    }
+
+    if (mode === "edit" && !selectedImageDataURL) {
+        showMessage(message, "Please select a photo from your phone first.");
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = mode === "edit"
+        ? "✨ Editing picture..."
+        : "✨ Creating picture...";
+
+    showMessage(
+        message,
+        mode === "edit"
+            ? "Uploading your selected image to the image service and submitting your edit..."
+            : "Submitting your picture request..."
+    );
+
+    try {
+        const endpoint = mode === "edit"
+            ? "/api/image/edit"
+            : "/api/image";
+
+        const payload = mode === "edit"
+            ? {
+                prompt: prompt,
+                image_url: selectedImageDataURL
+            }
+            : {
+                prompt: prompt,
+                image_size: imageSize
+            };
+
+        const data = await glowFetch(endpoint, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        });
+
+        showMessage(
+            message,
+            data.request_id
+                ? "✨ Your picture request has been submitted. Waiting for the result..."
+                : "✨ Your picture request was submitted."
+        );
+
+        await refreshGlowCreations();
+
+        if (data.request_id) {
+            await waitForGeneration(
+                data.request_id,
+                "glowImageMessage",
+                "glowImageResult",
+                "image"
+            );
+        } else {
+            showMessage(
+                message,
+                "The server accepted the request, but did not return a request ID. Check Your Creations."
+            );
+        }
+    } catch (error) {
+        showMessage(message, "❌ " + error.message);
+    } finally {
+        button.disabled = false;
+        updateImageMode();
+    }
+}
+
+/* ================================
+   GENERATION STATUS
+================================ */
+
+function showMessage(element, text) {
+    if (!element) return;
+    element.textContent = text;
+    element.style.display = "block";
+}
+
+function findMediaURL(data) {
+    if (!data) return "";
+
+    if (typeof data.media_url === "string") return data.media_url;
+    if (typeof data.url === "string") return data.url;
+
+    const result = data.result || data.output || {};
+
+    if (typeof result.media_url === "string") return result.media_url;
+    if (typeof result.url === "string") return result.url;
+
+    if (Array.isArray(result.images) && result.images[0]) {
+        return result.images[0].url || "";
+    }
+
+    if (Array.isArray(result.video) && result.video[0]) {
+        return result.video[0].url || "";
+    }
+
+    if (typeof result.video === "string") return result.video;
+
+    if (Array.isArray(result.audio) && result.audio[0]) {
+        return result.audio[0].url || "";
+    }
+
+    if (typeof result.audio_url === "string") return result.audio_url;
+
+    return "";
+}
+
+function renderGeneratedMedia(container, type, url) {
+    if (!container || !url) return;
+
+    // Only display valid HTTP(S) URLs or image data URLs.
+    const allowed = /^https?:\/\//i.test(url) ||
+        (type === "image" && /^data:image\//i.test(url));
+
+    if (!allowed) return;
+
+    let element;
+
+    if (type === "image") {
+        element = document.createElement("img");
+        element.alt = "Generated GLOW picture";
+    } else if (type === "video") {
+        element = document.createElement("video");
+        element.controls = true;
+        element.playsInline = true;
+    } else if (type === "music") {
+        element = document.createElement("audio");
+        element.controls = true;
+    } else {
+        return;
+    }
+
+    element.src = url;
+    element.style.width = "100%";
+    element.style.maxHeight = "460px";
+    element.style.marginTop = "18px";
+
+    container.replaceChildren(element);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Open or save your result";
+    link.style.display = "inline-block";
+    link.style.marginTop = "12px";
+
+    container.appendChild(link);
+}
+
+async function waitForGeneration(requestId, messageId, resultId, type) {
+    const message = $(messageId);
+    const resultContainer = $(resultId);
+
+    const maxAttempts = 60;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        try {
+            const data = await glowFetch(
+                "/api/generation/status/" + encodeURIComponent(requestId)
+            );
+
+            const status = String(data.status || "").toLowerCase();
+            const mediaURL = findMediaURL(data);
+
+            if (
+                status === "completed" ||
+                status === "complete" ||
+                status === "success" ||
+                status === "done"
+            ) {
+                if (mediaURL) {
+                    showMessage(message, "✅ Your creation is ready!");
+                    renderGeneratedMedia(resultContainer, type, mediaURL);
+                } else {
+                    showMessage(
+                        message,
+                        "The request finished. Refresh Your Creations to check the saved result."
+                    );
+                }
+
+                await refreshGlowCreations();
+                await loadGlowUser();
+                return;
+            }
+
+            if (
+                status === "failed" ||
+                status === "error"
+            ) {
+                showMessage(
+                    message,
+                    "❌ Generation failed. Please try again."
+                );
+                await refreshGlowCreations();
+                return;
+            }
+
+            showMessage(
+                message,
+                "⏳ GLOW is processing your " + type +
+                "... (" + (attempt + 1) + "/" + maxAttempts + ")"
+            );
+        } catch (error) {
+            // A temporary status error should not immediately cancel the job.
+            showMessage(
+                message,
+                "⏳ Your " + type +
+                " may still be processing. Checking again..."
+            );
+        }
+    }
+
+    showMessage(
+        message,
+        "Your request is taking longer than expected. Check Your Creations or refresh the dashboard shortly."
+    );
+
+    await refreshGlowCreations();
+}
+
+/* ================================
    ACCOUNT
-===================================================== */
+================================ */
 
 function openGlowAccount() {
-
-    const modal =
-        glowElement("accountModal");
-
-    if (!modal) return;
-
-
-    modal.style.display = "flex";
-
-    modal.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-
-    document.body.style.overflow =
-        "hidden";
-
+    $("accountModal").style.display = "flex";
+    $("accountModal").setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
 }
-
 
 function closeGlowAccount() {
-
-    const modal =
-        glowElement("accountModal");
-
-    if (!modal) return;
-
-
-    modal.style.display = "none";
-
-    modal.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
+    $("accountModal").style.display = "none";
+    $("accountModal").setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
-
 }
 
-
-/* =====================================================
+/* ================================
    LOGOUT
-===================================================== */
+================================ */
 
 async function glowLogout() {
+    const button = $("logoutButton");
+    if (button) button.disabled = true;
 
     try {
-
-        await fetch(
-            "/api/auth/logout",
-            {
-                method: "POST",
-                credentials: "include"
-            }
-        );
-
+        await glowFetch("/api/auth/logout", {method: "POST"});
+    } catch (error) {
+        console.error("Logout error:", error);
     }
 
-    catch (error) {
-
-        console.error(
-            "Logout error:",
-            error
-        );
-
-    }
-
-
-    window.location.href =
-        "/login.html";
-
+    window.location.href = "/login.html";
 }
 
-
-/* =====================================================
-   USER
-===================================================== */
+/* ================================
+   USER AND USAGE
+================================ */
 
 async function loadGlowUser() {
-
     try {
+        const data = await glowFetch("/api/auth/me");
 
-        const response =
-            await fetch(
-                "/api/auth/me",
-                {
-                    credentials: "include"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            window.location.href =
-                "/login.html";
-
+        if (!data.authenticated) {
+            window.location.href = "/login.html";
             return;
-
         }
 
+        const user = data.user || {};
+        const username = user.username || user.name || "Creator";
+        const email = user.email || "No email";
+        const plan = user.plan || "GLOW FREE";
 
-        const data =
-            await response.json();
-
-
-        if (
-            !data ||
-            !data.authenticated
-        ) {
-
-            window.location.href =
-                "/login.html";
-
-            return;
-
-        }
-
-
-        const user =
-            data.user || {};
-
-
-        const username =
-            user.username ||
-            user.name ||
-            "Creator";
-
-
-        const email =
-            user.email ||
-            "No email";
-
-
-        const plan =
-            user.plan ||
-            "GLOW FREE";
-
-
-        const usernameFields = [
-
+        [
             "headerUsername",
             "welcomeUsername",
             "profileUsername",
             "accountUsername"
+        ].forEach(id => {
+            if ($(id)) $(id).textContent = username;
+        });
 
-        ];
+        ["profileEmail", "accountEmail"].forEach(id => {
+            if ($(id)) $(id).textContent = email;
+        });
 
+        ["headerPlan", "planName", "profilePlan", "accountPlan"].forEach(id => {
+            if ($(id)) $(id).textContent = plan;
+        });
 
-        usernameFields.forEach(
-            function(id) {
+        const usage = data.usage || user.usage || {};
 
-                const element =
-                    glowElement(id);
+        if (usage.image_used !== undefined) {
+            $("imageUsage").textContent = usage.image_used;
+        }
 
-                if (element) {
+        if (usage.music_used !== undefined) {
+            $("musicUsage").textContent = usage.music_used;
+        }
 
-                    element.textContent =
-                        username;
+        if (usage.video_used !== undefined) {
+            $("videoUsage").textContent = usage.video_used;
+        }
 
-                }
+        // Also support API responses that provide usage as a user field.
+        if (user.image_used !== undefined) {
+            $("imageUsage").textContent = user.image_used;
+        }
 
-            }
-        );
+        if (user.music_used !== undefined) {
+            $("musicUsage").textContent = user.music_used;
+        }
 
-
-        const emailFields = [
-
-            "profileEmail",
-            "accountEmail"
-
-        ];
-
-
-        emailFields.forEach(
-            function(id) {
-
-                const element =
-                    glowElement(id);
-
-                if (element) {
-
-                    element.textContent =
-                        email;
-
-                }
-
-            }
-        );
-
-
-        const planFields = [
-
-            "headerPlan",
-            "planName",
-            "profilePlan",
-            "accountPlan"
-
-        ];
-
-
-        planFields.forEach(
-            function(id) {
-
-                const element =
-                    glowElement(id);
-
-                if (element) {
-
-                    element.textContent =
-                        plan;
-
-                }
-
-            }
-        );
-
+        if (user.video_used !== undefined) {
+            $("videoUsage").textContent = user.video_used;
+        }
+    } catch (error) {
+        console.error("User loading error:", error);
     }
-
-    catch (error) {
-
-        console.error(
-            "User loading error:",
-            error
-        );
-
-    }
-
 }
 
-
-/* =====================================================
-   CREATIONS
-===================================================== */
+/* ================================
+   YOUR CREATIONS
+================================ */
 
 async function refreshGlowCreations() {
-
-    const list =
-        glowElement("creationsList");
-
-
+    const list = $("creationsList");
     if (!list) return;
 
-
     try {
-
-        const response =
-            await fetch(
-                "/api/creations",
-                {
-                    credentials: "include"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            return;
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        const creations =
-            data.creations || [];
-
+        const data = await glowFetch("/api/creations");
+        const creations = data.creations || [];
 
         if (!creations.length) {
-
             list.innerHTML = `
-
                 <div class="empty-creations">
-
-                    <div class="empty-icon">
-                        ✨
-                    </div>
-
-                    <h3>
-                        Nothing here yet
-                    </h3>
-
-                    <p>
-                        Create your first project
-                        with GLOW AI STUDIO.
-                    </p>
-
+                    <div class="empty-icon">✨</div>
+                    <h3>Nothing here yet</h3>
+                    <p>Create your first project with GLOW AI STUDIO.</p>
                 </div>
-
             `;
-
             return;
-
         }
 
+        list.replaceChildren();
 
-        list.innerHTML =
-            creations.map(
-                function(item) {
+        creations.forEach(item => {
+            const card = document.createElement("article");
+            card.className = "creation-card";
 
-                    return `
+            const rawType = String(
+                item.creation_type || item.type || "creation"
+            ).toLowerCase();
 
-                        <div class="creation-card">
+            const type = rawType.includes("image") ? "image"
+                : rawType.includes("video") ? "video"
+                : rawType.includes("music") || rawType.includes("audio") ? "music"
+                : "other";
 
-                            <h3>
-                                ${
-                                    item.title ||
-                                    item.type ||
-                                    "GLOW Creation"
-                                }
-                            </h3>
+            const title = document.createElement("h3");
+            title.textContent = type === "image" ? "🖼️ AI Picture"
+                : type === "video" ? "🎬 AI Video"
+                : type === "music" ? "🎵 AI Music"
+                : "✨ GLOW Creation";
 
-                            <p>
-                                ${
-                                    item.prompt ||
-                                    "AI creation"
-                                }
-                            </p>
+            card.appendChild(title);
 
-                        </div>
+            const prompt = document.createElement("p");
+            prompt.textContent = item.prompt || "AI creation";
+            card.appendChild(prompt);
 
-                    `;
+            const status = String(item.status || "submitted").toLowerCase();
 
+            const badge = document.createElement("span");
+            badge.className = "creation-status";
+            badge.textContent = status;
+            card.appendChild(badge);
+
+            const url = item.media_url || item.url || "";
+
+            if (url && /^https?:\/\//i.test(url)) {
+                if (type === "image") {
+                    const img = document.createElement("img");
+                    img.src = url;
+                    img.alt = "Your generated picture";
+                    img.loading = "lazy";
+                    card.insertBefore(img, prompt);
+                } else if (type === "video") {
+                    const video = document.createElement("video");
+                    video.src = url;
+                    video.controls = true;
+                    video.playsInline = true;
+                    card.insertBefore(video, prompt);
+                } else if (type === "music") {
+                    const audio = document.createElement("audio");
+                    audio.src = url;
+                    audio.controls = true;
+                    card.appendChild(audio);
                 }
-            ).join("");
 
+                const link = document.createElement("a");
+                link.href = url;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = "Open or save creation";
+                card.appendChild(link);
+            } else if (item.request_id && status !== "failed") {
+                const note = document.createElement("p");
+                note.textContent = "Your creation may still be processing. Refresh to check its status.";
+                card.appendChild(note);
+            }
+
+            list.appendChild(card);
+        });
+    } catch (error) {
+        console.error("Creations error:", error);
     }
-
-    catch (error) {
-
-        console.error(
-            "Creations error:",
-            error
-        );
-
-    }
-
 }
 
-
-/* =====================================================
+/* ================================
    BUTTON EVENTS
-===================================================== */
+================================ */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
+document.addEventListener("DOMContentLoaded", () => {
+    $("musicStudioButton").addEventListener("click", () => {
+        openGlowStudio("music");
+    });
 
-        const musicButton =
-            glowElement(
-                "musicStudioButton"
-            );
+    $("videoStudioButton").addEventListener("click", () => {
+        openGlowStudio("video");
+    });
 
-        const videoButton =
-            glowElement(
-                "videoStudioButton"
-            );
+    $("imageStudioButton").addEventListener("click", () => {
+        openGlowStudio("image");
+    });
 
-        const accountButton =
-            glowElement(
-                "accountButton"
-            );
+    $("studioCloseButton").addEventListener("click", closeGlowStudio);
+    $("accountButton").addEventListener("click", openGlowAccount);
+    $("accountCloseButton").addEventListener("click", closeGlowAccount);
+    $("logoutButton").addEventListener("click", glowLogout);
+    $("refreshButton").addEventListener("click", async () => {
+        await refreshGlowCreations();
+        await loadGlowUser();
+    });
 
-        const logoutButton =
-            glowElement(
-                "logoutButton"
-            );
-
-        const refreshButton =
-            glowElement(
-                "refreshButton"
-            );
-
-        const studioCloseButton =
-            glowElement(
-                "studioCloseButton"
-            );
-
-        const accountCloseButton =
-            glowElement(
-                "accountCloseButton"
-            );
-
-
-        /* MUSIC */
-
-        if (musicButton) {
-
-            musicButton.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-
-                    event.stopPropagation();
-
-                    openGlowStudio("music");
-
-                }
-            );
-
+    $("glowStudioModal").addEventListener("click", event => {
+        if (event.target === $("glowStudioModal")) {
+            closeGlowStudio();
         }
+    });
 
-
-        /* VIDEO */
-
-        if (videoButton) {
-
-            videoButton.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-
-                    event.stopPropagation();
-
-                    openGlowStudio("video");
-
-                }
-            );
-
+    $("accountModal").addEventListener("click", event => {
+        if (event.target === $("accountModal")) {
+            closeGlowAccount();
         }
+    });
 
-
-        /* ACCOUNT */
-
-        if (accountButton) {
-
-            accountButton.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-
-                    event.stopPropagation();
-
-                    openGlowAccount();
-
-                }
-            );
-
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeGlowStudio();
+            closeGlowAccount();
         }
-
-
-        /* LOGOUT */
-
-        if (logoutButton) {
-
-            logoutButton.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-
-                    glowLogout();
-
-                }
-            );
-
-        }
-
-
-        /* REFRESH */
-
-        if (refreshButton) {
-
-            refreshButton.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-
-                    refreshGlowCreations();
-
-                }
-            );
-
-        }
-
-
-        /* CLOSE STUDIO */
-
-        if (studioCloseButton) {
-
-            studioCloseButton.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-
-                    closeGlowStudio();
-
-                }
-            );
-
-        }
-
-
-        /* CLOSE ACCOUNT */
-
-        if (accountCloseButton) {
-
-            accountCloseButton.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-
-                    closeGlowAccount();
-
-                }
-            );
-
-        }
-
-
-        /* BACKGROUND CLICK — STUDIO */
-
-        const studioModal =
-            glowElement(
-                "glowStudioModal"
-            );
-
-
-        if (studioModal) {
-
-            studioModal.addEventListener(
-                "click",
-                function(event) {
-
-                    if (
-                        event.target ===
-                        studioModal
-                    ) {
-
-                        closeGlowStudio();
-
-                    }
-
-                }
-            );
-
-        }
-
-
-                /* BACKGROUND CLICK — ACCOUNT */
-
-        const accountModal =
-            glowElement(
-                "accountModal"
-            );
-
-        if (accountModal) {
-
-            accountModal.addEventListener(
-                "click",
-                function(event) {
-
-                    if (
-                        event.target ===
-                        accountModal
-                    ) {
-
-                        closeGlowAccount();
-
-                    }
-
-                }
-            );
-
-        }
-
-
-        /* ESCAPE KEY */
-
-        document.addEventListener(
-            "keydown",
-            function(event) {
-
-                if (event.key === "Escape") {
-
-                    closeGlowStudio();
-
-                    closeGlowAccount();
-
-                }
-
-            }
-        );
-
-
-        /* LOAD DASHBOARD DATA */
-
-        loadGlowUser();
-
-        refreshGlowCreations();
-
-    }
-);
-
+    });
+
+    loadGlowUser();
+    refreshGlowCreations();
+});
 </script>
 
 </body>
-</html>
+    </html>
